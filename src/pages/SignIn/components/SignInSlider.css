@@ -1,0 +1,192 @@
+.d-flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-center {
+  align-items: center;
+  justify-content: center;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.h-100 {
+  height: 100%;
+}
+
+.position-relative {
+  position: relative;
+}
+
+.position-absolute {
+  position: absolute;
+}
+
+.top-0 {
+  top: 0;
+}
+
+.end-0 {
+  right: 0;
+}
+
+.start-0 {
+  left: 0;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mb-auto {
+  margin-bottom: auto !important; /* Important to override flex behavior */
+}
+
+.mb-5 {
+  margin-bottom: 30px !important; /* Based on Bootstrap's mb-5 */
+}
+
+.mb-4 {
+  margin-bottom: 24px !important; /* Based on Bootstrap's mb-4 */
+}
+
+.mb-3 {
+  margin-bottom: 16px !important; /* Based on Bootstrap's mb-3 */
+}
+
+.mb-2 {
+  margin-bottom: 8px !important; /* Based on Bootstrap's mb-2 */
+}
+
+.mb-1 {
+  margin-bottom: 4px !important; /* Based on Bootstrap's mb-1 */
+}
+
+.fw-bolder {
+  font-weight: 700;
+}
+
+.fw-bold {
+  font-weight: 700;
+}
+
+.fw-normal {
+  font-weight: 400;
+}
+
+.slider-side {
+  /* All background and size properties handled by inline style in React */
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 40%; /* Explicitly set to take 40% of parent width */
+  min-width: 280px;
+  position: relative;
+}
+
+.pattern-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.slider-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.text-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  margin-top: -30px; /* Adjusted to move text content slightly upward */
+  width: 100%; /* Ensure text content takes full available width for button centering */
+}
+
+.slider-title {
+  /* All styles set via inline style in React */
+}
+
+.slider-subtitle {
+  /* All styles set via inline style in React */
+}
+
+.explore-btn {
+  /* Removed display: block; and margin: 0 auto; */
+  /* All other styles set via inline style in React */
+  align-self: center; /* Explicitly center the button within its flex container */
+}
+
+.laptop-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.laptop-container img {
+  /* Styles set via inline style in React */
+}
+
+.carousel-indicators {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.indicator {
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.indicator.active {
+  /* background-color set via inline style in React */
+}
+
+/* Responsive adjustments for overall layout, not content within slider/form */
+@media (max-width: 991.98px) {
+  .slider-side {
+    flex: 1 1 100%; /* Make slider take full width on small screens */
+    min-width: unset; /* Remove min-width restriction */
+    height: auto; /* Adjust height automatically */
+  }
+
+  .laptop-container img {
+    width: 80% !important; /* Make image smaller on small screens */
+    max-width: 300px; /* Limit max width for images on very small screens */
+  }
+
+  /* Adjust spacing for text content on smaller screens */
+  .text-content {
+    margin-top: 20px; /* Reduced margin-top for text content on mobile */
+  }
+
+  /* Adjust slider indicators for smaller screens */
+  .carousel-indicators {
+    bottom: 10px; /* Move indicators slightly up on mobile */
+  }
+} 

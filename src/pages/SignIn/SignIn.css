@@ -1,0 +1,57 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700');
+
+/* Root styles */
+.d-flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-lg-row {
+  flex-direction: column;
+}
+
+.flex-column-fluid {
+  flex: 1 1 auto;
+}
+
+.min-vh-100 {
+  min-height: 100vh;
+}
+
+/* App root styles */
+#kt_app_root {
+  background-color: #FAFAFA;
+  overflow-x: hidden;
+}
+
+/* Responsive adjustments */
+@media (min-width: 992px) {
+  .flex-lg-row {
+    flex-direction: row;
+  }
+  .form-section-container {
+    flex: 1; /* Take remaining space */
+    display: flex;
+    justify-content: center; /* Center form horizontally */
+    align-items: center; /* Center form vertically */
+  }
+}
+
+/* Mobile-first approach */
+@media (max-width: 991.98px) {
+  .d-flex.flex-column.flex-lg-row {
+    flex-direction: column;
+  }
+  
+  .min-vh-100 {
+    min-height: auto;
+  }
+}
+
+.d-flex.flex-column.flex-lg-row.flex-column-fluid {
+  /* Removed width: 100%; and min-height: 100vh; to allow flex-column-fluid to handle width and height */
+} 

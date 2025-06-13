@@ -1,0 +1,147 @@
+/* Full-screen centered wrapper */
+.form-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1; /* Allow it to grow to fill available space */
+  background-color: #FAFAFA;
+  box-sizing: border-box;
+}
+
+/* Centered form layout */
+.sign-in-form {
+  width: 100%;
+  max-width: 650px; /* Increased size to make the form larger */
+  padding: 30px 20px 30px 20px; /* Padding for mobile */
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  /* Removed background-color, border-radius, and box-shadow to remove card look */
+}
+
+/* Headings */
+.form-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 0.5rem;
+}
+
+.form-subtitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 1rem;
+}
+
+.form-description {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 2rem;
+  max-width: 400px; /* Reintroduced: Constrain paragraph width for 'little of form' */
+  margin: 0 auto 2rem auto; /* Reintroduced: Center paragraph and apply margin-bottom */
+}
+
+/* Input Fields */
+.form-group {
+  margin-bottom: 1.5rem;
+  text-align: center; /* Center the input box itself */
+}
+
+.form-input {
+  width: 90%; /* Decreased width */
+  max-width: 500px; /* Optional: limit max width on larger screens */
+  padding: 16px 22px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #fff;
+  box-sizing: border-box;
+  text-align: left; /* Ensures text and placeholder start from the left */
+  margin: 0 auto; /* Center input field */
+}
+
+.form-input::placeholder {
+  text-align: left; /* Placeholder text starts from the left */
+}
+
+
+.sign-in-button {
+  width: 90%;           /* Same reduced width */
+  max-width: 500px;     /* Limit max width */
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: #000B42;
+  color: #00F0FF;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 0 auto;       /* Center horizontally */
+  display: block;       /* Needed to apply margin auto on block element */
+}
+
+.sign-in-button:hover {
+  background-color: #001a70;
+}
+
+/* Footer */
+.form-footer {
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.create-account {
+  color: #00F0FF;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.create-account:hover {
+  text-decoration: underline;
+}
+
+/* Copyright */
+.copyright {
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+  .form-title {
+    font-size: 1.75rem;
+  }
+
+  .form-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .form-description {
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 992px) {
+  .sign-in-form {
+    padding: 40px 30px 40px 30px; /* Padding for desktop */
+  }
+}
+
+@media (max-width: 991.98px) {
+  .form-side {
+    padding: 0 1rem;
+  }
+  .main-form-content-wrapper {
+    padding: 32px 16px;
+  }
+  .form-container {
+    max-width: 100%;
+  }
+  .form-description {
+    /* Removed max-width: 90%; to allow it to flow naturally */
+  }
+}
