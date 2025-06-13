@@ -58,7 +58,7 @@ const slides = [
       backgroundPosition: 'center center',
       backgroundSize: 'cover',
     },
-    textMarginTop: 'clamp(20px, 3vh, 30px)',
+    textMarginTop: 'clamp(0px, 0.5vh, 5px)',
     buttonMarginTop: '30px',
   },
   {
@@ -121,7 +121,7 @@ const slides = [
       backgroundPosition: 'right top',
       backgroundSize: '100% auto',
     },
-    textMarginTop: 'clamp(30px, 4vh, 40px)',
+    textMarginTop: 'clamp(5px, 1vh, 10px)',
     buttonMarginTop: '40px',
   },
   {
@@ -179,7 +179,7 @@ const slides = [
       backgroundPosition: 'center center',
       backgroundSize: 'cover',
     },
-    textMarginTop: 'clamp(40px, 6vh, 60px)',
+    textMarginTop: 'clamp(10px, 1.5vh, 15px)',
     buttonMarginTop: '30px',
   },
 ];

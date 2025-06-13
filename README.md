@@ -1,25 +1,32 @@
 # Dojo React Project
 
-A basic React application named "dojo react project" with a professional folder structure, focusing on a responsive sign-in page.
+A basic React application named "dojo react project" with a professional folder structure, featuring responsive sign-in and sign-up pages.
 
 ## Project Overview
 
-This project implements a modern and responsive sign-in page as its primary feature. The page includes:
-- A dynamic slider on one side, showcasing different content and images.
-- A functional sign-in form on the other side.
-- Responsive design for various screen sizes, ensuring optimal viewing on both desktop and mobile devices.
+This project implements modern and responsive sign-in and sign-up pages as its primary features. The application includes:
+-   A dynamic slider on one side for both sign-in and sign-up pages, showcasing different content and images.
+-   Functional sign-in and sign-up forms on the other side.
+-   A dedicated Terms and Conditions page linked from the sign-up form.
+-   Responsive design for various screen sizes, ensuring optimal viewing on both desktop and mobile devices.
 
 ## Project Structure
 
 ```
 src/
 ├── components/     # Reusable UI components (e.g., Button - though currently removed)
-├── pages/          # Page-level components (e.g., SignIn)
-│   └── SignIn/
-│       ├── components/ # Components specific to the SignIn page (e.g., SignInSlider, SignInForm)
-│       ├── SignIn.css
-│       ├── SignIn.js
-│       └── SignInForm.css
+├── pages/          # Page-level components
+│   ├── SignIn/
+│   │   ├── components/ # Components specific to the SignIn page (e.g., SignInSlider, SignInForm)
+│   │   ├── SignIn.css
+│   │   └── SignIn.js
+│   ├── SignUp/
+│   │   ├── components/ # Components specific to the SignUp page (e.g., SignUpForm)
+│   │   ├── SignUp.css
+│   │   └── SignUp.js
+│   └── TermsAndConditions/
+│       ├── TermsAndConditions.css
+│       └── TermsAndConditions.js
 ├── assets/         # Static assets (images, fonts, etc.)
 ├── hooks/          # Custom React hooks
 ├── utils/          # Utility functions and helpers
