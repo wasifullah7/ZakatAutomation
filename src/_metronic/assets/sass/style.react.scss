@@ -1,0 +1,35 @@
+// Import variables first
+@import "variables";
+
+// React specific styles
+@import "style";
+@import "flatpickr/dist/flatpickr.css";
+
+// React components
+.react-select {
+  &__control {
+    min-height: 40px;
+    border-color: $input-border-color;
+    
+    &--is-focused {
+      border-color: $primary;
+      box-shadow: 0 0 0 0.2rem rgba($primary, 0.25);
+    }
+  }
+}
+
+// React layout
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+// React pages
+.page {
+  padding: 2rem;
+}
+
+#root {
+  display: contents;
+}

@@ -64,6 +64,7 @@ const SignInForm = () => {
         <span className="copyright">
           © 2023 SamurAI Dojo, Inc. All rights reserved.
         </span>
+      
       </div>
         </div>
       </form>
