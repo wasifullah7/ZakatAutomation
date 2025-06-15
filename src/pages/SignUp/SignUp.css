@@ -28,17 +28,28 @@
   overflow-x: hidden;
 }
 
+/* Form section container */
+.form-section-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-color: #FAFAFA;
+}
+
 /* Responsive adjustments */
 @media (min-width: 992px) {
   .flex-lg-row {
     flex-direction: row;
   }
+  
   .form-section-container {
-    flex: 1; /* Take remaining space */
+    flex: 1;
     display: flex;
-    justify-content: center; /* Center form horizontally */
-    align-items: flex-start; /* Aligned to start to move content upward */
-    padding-top: 2vh; /* Add some top padding to adjust vertical position */
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
   }
 }
 
@@ -50,6 +61,10 @@
   
   .min-vh-100 {
     min-height: auto;
+  }
+  
+  .form-section-container {
+    padding: 1rem;
   }
 }
 

@@ -1,0 +1,112 @@
+/* Keenthemes Icons */
+.ki-duotone {
+  position: relative;
+  display: inline-block;
+  font-family: "Keenthemes Icons";
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.ki-duotone::before {
+  position: absolute;
+  color: var(--kt-primary);
+  opacity: 0.3;
+}
+
+.ki-duotone::after {
+  position: relative;
+  color: var(--kt-primary);
+}
+
+/* Icon Sizes */
+.fs-1 {
+  font-size: 3rem !important;
+}
+
+.fs-2 {
+  font-size: 2.5rem !important;
+}
+
+.fs-2x {
+  font-size: 2rem !important;
+}
+
+.fs-3 {
+  font-size: 1.75rem !important;
+}
+
+.fs-4 {
+  font-size: 1.5rem !important;
+}
+
+.fs-5 {
+  font-size: 1.25rem !important;
+}
+
+.fs-6 {
+  font-size: 1rem !important;
+}
+
+.fs-7 {
+  font-size: 0.85rem !important;
+}
+
+.fs-8 {
+  font-size: 0.75rem !important;
+}
+
+/* Icon Colors */
+.text-primary {
+  color: var(--kt-primary) !important;
+}
+
+.text-success {
+  color: var(--kt-success) !important;
+}
+
+.text-info {
+  color: var(--kt-info) !important;
+}
+
+.text-warning {
+  color: var(--kt-warning) !important;
+}
+
+.text-danger {
+  color: var(--kt-danger) !important;
+}
+
+/* Icon Rotations */
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* Icon Spacing */
+.me-1 {
+  margin-right: 0.25rem !important;
+}
+
+.me-2 {
+  margin-right: 0.5rem !important;
+}
+
+.me-3 {
+  margin-right: 1rem !important;
+}
+
+.ms-1 {
+  margin-left: 0.25rem !important;
+}
+
+.ms-2 {
+  margin-left: 0.5rem !important;
+}
+
+.ms-3 {
+  margin-left: 1rem !important;
+} 
