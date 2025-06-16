@@ -237,6 +237,7 @@ router.patch('/me', auth, upload.array('documents', 5), async (req, res) => {
       if (update === 'profile') {
         try {
           const profileData = JSON.parse(req.body.profile);
+          console.log('Parsed profileData on backend:', profileData);
           Object.keys(profileData).forEach(profileKey => {
             if (profileKey !== 'documents') { // Skip documents as they're handled above
               req.user.profile[profileKey] = profileData[profileKey];

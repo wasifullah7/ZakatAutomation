@@ -136,18 +136,29 @@ const AcceptorProfile = () => {
 
       const formData = new FormData();
       
-      // Add basic profile information
+      // Add basic user information
       formData.append('firstName', values.firstName);
       formData.append('lastName', values.lastName);
       
-      // Add profile data as JSON string
-      const profileData = {
-        ...values.profile,
-        documents: [] // Don't send existing documents in the profile data
-      };
+      // Add all profile data as a single JSON string
+      const profileData = {};
+      // Iterate over values.profile and add to profileData
+      for (const key in values.profile) {
+        if (Object.prototype.hasOwnProperty.call(values.profile, key)) {
+          // Exclude documents as they are handled separately
+          if (key !== 'documents') {
+            // Handle nested emergencyContact object
+            if (key === 'emergencyContact' && typeof values.profile[key] === 'object' && values.profile[key] !== null) {
+                profileData[key] = values.profile[key];
+            } else {
+                profileData[key] = values.profile[key];
+            }
+          }
+        }
+      }
       formData.append('profile', JSON.stringify(profileData));
 
-      // Add documents
+      // Add documents separately
       documents.forEach((doc) => {
         formData.append('documents', doc);
       });

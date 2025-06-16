@@ -21,7 +21,8 @@ import {
   Divider,
   IconButton,
   InputAdornment,
-  Avatar
+  Avatar,
+  Chip
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -113,21 +114,46 @@ const DonorProfile = () => {
       setError('');
       setSuccess('');
 
+      // Validate documents
+      if (documents.length === 0) {
+        setError('Please upload at least one document to proceed');
+        setLoading(false);
+        setSubmitting(false);
+        return;
+      }
+
       const formData = new FormData();
       
-      // Add basic profile information
-      Object.keys(values).forEach(key => {
-        if (key !== 'documents') {
-          formData.append(key, values[key]);
-        }
-      });
+      // Add basic user information (firstName, lastName)
+      formData.append('firstName', values.firstName);
+      formData.append('lastName', values.lastName);
 
-      // Add documents
-      if (documents.length > 0) {
-        documents.forEach((file) => {
-          formData.append('documents', file);
-        });
-      }
+      // Construct profile data to send as a JSON string
+      const profileData = {};
+      // These fields are directly under the user object in schema, but for FormData consistency, we'll put them in profile
+      // The backend should handle parsing this correctly.
+      profileData.phone = values.phone;
+      profileData.address = values.address;
+      profileData.city = values.city;
+      profileData.country = values.country;
+      profileData.postalCode = values.postalCode;
+      profileData.nationalId = values.nationalId;
+      profileData.nationalIdExpiry = values.nationalIdExpiry;
+      profileData.bankName = values.bankName;
+      profileData.bankBranch = values.bankBranch;
+      profileData.bankAccountNumber = values.bankAccountNumber;
+      profileData.organizationName = values.organizationName;
+      profileData.organizationType = values.organizationType;
+      profileData.registrationNumber = values.registrationNumber;
+      profileData.registrationDate = values.registrationDate;
+      profileData.registrationExpiry = values.registrationExpiry;
+
+      formData.append('profile', JSON.stringify(profileData));
+
+      // Add documents separately
+      documents.forEach((file) => {
+        formData.append('documents', file);
+      });
 
       const result = await updateProfile(formData);
       
@@ -259,6 +285,35 @@ const DonorProfile = () => {
                       ),
                     }}
                   />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="National ID"
+                    name="nationalId"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PersonIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="National ID Expiry"
+                      value={dayjs(initialValues.nationalIdExpiry)}
+                      onChange={(newValue) => {
+                        // Handle date change
+                      }}
+                      renderInput={(params) => (
+                        <TextField {...params} fullWidth />
+                      )}
+                    />
+                  </LocalizationProvider>
                 </Grid>
               </Grid>
             </CardContent>
@@ -421,8 +476,22 @@ const DonorProfile = () => {
                   Upload Required Documents
                 </Typography>
                 <Typography variant="body2" color="text.secondary" paragraph>
-                  Please upload your organization registration documents, tax certificates, and any other relevant documents.
+                  Please upload at least one of the following documents:
                 </Typography>
+                <Box sx={{ mb: 3, textAlign: 'left', maxWidth: 400, mx: 'auto' }}>
+                  <Typography variant="body2" component="div" sx={{ mb: 1 }}>
+                    • Organization Registration Certificate
+                  </Typography>
+                  <Typography variant="body2" component="div" sx={{ mb: 1 }}>
+                    • Tax Exemption Certificate
+                  </Typography>
+                  <Typography variant="body2" component="div" sx={{ mb: 1 }}>
+                    • Latest Annual Report (if applicable)
+                  </Typography>
+                  <Typography variant="body2" component="div" sx={{ mb: 1 }}>
+                    • Any other supporting documents
+                  </Typography>
+                </Box>
                 <Button
                   variant="contained"
                   component="label"
@@ -434,15 +503,35 @@ const DonorProfile = () => {
                     type="file"
                     hidden
                     multiple
+                    accept=".pdf,.jpg,.jpeg,.png"
                     onChange={handleDocumentChange}
                   />
                 </Button>
-                {documents.length > 0 && (
+                {documents.length > 0 ? (
                   <Box sx={{ mt: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="success.main" sx={{ mb: 1 }}>
                       {documents.length} file(s) selected
                     </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
+                      {documents.map((doc, index) => (
+                        <Chip
+                          key={index}
+                          label={doc.name}
+                          onDelete={() => {
+                            const newDocs = [...documents];
+                            newDocs.splice(index, 1);
+                            setDocuments(newDocs);
+                          }}
+                          color="primary"
+                          variant="outlined"
+                        />
+                      ))}
+                    </Box>
                   </Box>
+                ) : (
+                  <Typography variant="body2" color="error" sx={{ mt: 2 }}>
+                    Please upload at least one document to proceed
+                  </Typography>
                 )}
               </Box>
             </CardContent>
