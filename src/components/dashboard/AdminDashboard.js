@@ -44,7 +44,7 @@ import {
   Warning,
   Error,
 } from '@mui/icons-material';
-import { useAuth } from '../../context/AuthContext.tsx';
+import { useAuth } from '../../context/AuthContext';
 import DashboardLayout from './DashboardLayout';
 
 // Sample data for charts

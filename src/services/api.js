@@ -179,8 +179,10 @@ export const userAPI = {
 export const adminAPI = {
   getDonors: () => api.get('/admin/donors'),
   getAcceptors: () => api.get('/admin/acceptors'),
-  approveUser: (id, data) => api.put(`/admin/users/${id}/verify`, data),
+  approveUser: (id, data) => api.put(`/admin/approve/${id}`, data),
+  approveDonor: (id, data) => api.put(`/admin/approve-donor/${id}`, data),
   getAcceptorStats: () => api.get('/admin/stats/acceptors'),
+  getDonorStats: () => api.get('/admin/stats/donors'),
 };
 
 export default api; 

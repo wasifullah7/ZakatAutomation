@@ -39,9 +39,11 @@ import {
   Campaign,
   MoreVert,
   Add,
+  Calculate,
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext.tsx';
 import DashboardLayout from './DashboardLayout';
+import { useNavigate } from 'react-router-dom';
 
 // Sample data for charts
 const monthlyRequests = [
@@ -70,6 +72,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const AcceptorDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <DashboardLayout>

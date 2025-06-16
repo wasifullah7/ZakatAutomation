@@ -15,9 +15,9 @@ import {
   Dashboard as DashboardIcon,
   People as PeopleIcon,
   Payment as PaymentIcon,
-  History as HistoryIcon,
   Settings as SettingsIcon,
   Help as HelpIcon,
+  Calculate as CalculateIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -57,9 +57,9 @@ const Sidebar = ({ open, onClose }) => {
       roles: ['admin', 'donor'],
     },
     {
-      title: 'History',
-      path: '/history',
-      icon: <HistoryIcon />,
+      title: 'Zakat Calculator',
+      path: '/zakat-calculator',
+      icon: <CalculateIcon />,
       roles: ['admin', 'donor', 'acceptor'],
     },
     {

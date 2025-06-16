@@ -13,6 +13,7 @@ import {
   AccountCircle as AccountCircleIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
+  Calculate as CalculateIcon,
 } from '@mui/icons-material';
 
 const DashboardLayout = ({ children }) => {
@@ -64,6 +65,12 @@ const DashboardLayout = ({ children }) => {
           </ListItemIcon>
           <ListItemText primary="Dashboard" />
         </ListItem>
+        <ListItem button onClick={() => navigate('/zakat-calculator')}>
+          <ListItemIcon>
+            <CalculateIcon />
+          </ListItemIcon>
+          <ListItemText primary="Zakat Calculator" />
+        </ListItem>
         {user?.role === 'admin' && (
           <>
             <ListItem button onClick={() => navigate('/admin/donor-applications')}>
@@ -78,9 +85,15 @@ const DashboardLayout = ({ children }) => {
               </ListItemIcon>
               <ListItemText primary="Acceptor Applications" />
             </ListItem>
+            <ListItem button onClick={() => navigate('/admin/application-history')}>
+              <ListItemIcon>
+                <HistoryIcon />
+              </ListItemIcon>
+              <ListItemText primary="Application History" />
+            </ListItem>
           </>
         )}
-        {(user?.role === 'admin' || user?.role === 'donor') && (
+        {user?.role === 'donor' && (
           <ListItem button onClick={() => navigate('/donations')}>
             <ListItemIcon>
               <PaymentIcon />
@@ -88,18 +101,14 @@ const DashboardLayout = ({ children }) => {
             <ListItemText primary="Donations" />
           </ListItem>
         )}
-        <ListItem button onClick={() => navigate('/history')}>
-          <ListItemIcon>
-            <HistoryIcon />
-          </ListItemIcon>
-          <ListItemText primary="History" />
-        </ListItem>
-        <ListItem button onClick={() => navigate('/settings')}>
-          <ListItemIcon>
-            <SettingsIcon />
-          </ListItemIcon>
-          <ListItemText primary="Settings" />
-        </ListItem>
+        {user?.role === 'acceptor' && (
+          <ListItem button onClick={() => navigate('/requests')}>
+            <ListItemIcon>
+              <PaymentIcon />
+            </ListItemIcon>
+            <ListItemText primary="My Requests" />
+          </ListItem>
+        )}
       </List>
     </div>
   );
@@ -250,6 +259,12 @@ const DashboardLayout = ({ children }) => {
             </ListItemIcon>
             {sidebarOpen && <ListItemText primary="Dashboard" />}
           </ListItem>
+          <ListItem button onClick={() => navigate('/zakat-calculator')} sx={{ minHeight: 48, px: 2.5 }}>
+            <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
+              <CalculateIcon />
+            </ListItemIcon>
+            {sidebarOpen && <ListItemText primary="Zakat Calculator" />}
+          </ListItem>
           {user?.role === 'admin' && (
             <>
               <ListItem button onClick={() => navigate('/admin/donor-applications')} sx={{ minHeight: 48, px: 2.5 }}>
@@ -264,9 +279,15 @@ const DashboardLayout = ({ children }) => {
                 </ListItemIcon>
                 {sidebarOpen && <ListItemText primary="Acceptor Applications" />}
               </ListItem>
+              <ListItem button onClick={() => navigate('/admin/application-history')} sx={{ minHeight: 48, px: 2.5 }}>
+                <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
+                  <HistoryIcon />
+                </ListItemIcon>
+                {sidebarOpen && <ListItemText primary="Application History" />}
+              </ListItem>
             </>
           )}
-          {(user?.role === 'admin' || user?.role === 'donor') && (
+          {user?.role === 'donor' && (
             <ListItem button onClick={() => navigate('/donations')} sx={{ minHeight: 48, px: 2.5 }}>
               <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
                 <PaymentIcon />
@@ -274,12 +295,14 @@ const DashboardLayout = ({ children }) => {
               {sidebarOpen && <ListItemText primary="Donations" />}
             </ListItem>
           )}
-          <ListItem button onClick={() => navigate('/history')} sx={{ minHeight: 48, px: 2.5 }}>
-            <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
-              <HistoryIcon />
-            </ListItemIcon>
-            {sidebarOpen && <ListItemText primary="History" />}
-          </ListItem>
+          {user?.role === 'acceptor' && (
+            <ListItem button onClick={() => navigate('/requests')} sx={{ minHeight: 48, px: 2.5 }}>
+              <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
+                <PaymentIcon />
+              </ListItemIcon>
+              {sidebarOpen && <ListItemText primary="My Requests" />}
+            </ListItem>
+          )}
           <ListItem button onClick={() => navigate('/settings')} sx={{ minHeight: 48, px: 2.5 }}>
             <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
               <SettingsIcon />

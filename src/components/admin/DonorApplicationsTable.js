@@ -74,7 +74,7 @@ const DonorApplicationsTable = () => {
         payload.reason = rejectionReason || 'No reason provided';
       }
 
-      await adminAPI.approveUser(selectedDonor._id, payload);
+      await adminAPI.approveDonor(selectedDonor._id, payload);
       toast.success(`Donor application ${status} successfully!`);
       fetchDonors();
       handleCloseDialog();

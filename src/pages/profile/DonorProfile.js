@@ -576,7 +576,7 @@ const DonorProfile = () => {
           onSubmit={handleSubmit}
           enableReinitialize={true}
         >
-          {({ errors, touched, isSubmitting }) => (
+          {({ errors, touched, isSubmitting, isValid, dirty }) => (
             <Form>
               {renderStepContent(activeStep)}
 

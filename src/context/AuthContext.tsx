@@ -279,27 +279,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!user) return { success: false, error: 'No user found' };
 
         // Create an updated user object, ensuring documents are merged if profileData is FormData
-        let newProfile = response.data;
-        if (profileData instanceof FormData) {
-          // If documents were sent, merge them into the profile object for frontend state
-          // Note: This assumes backend successfully processed documents. If backend doesn't return updated documents, 
-          // we need to manually add them to the frontend state for immediate accuracy.
-          const documentsArray = [];
-          for (let pair of profileData.entries()) {
-            if (pair[0] === 'documents') {
-              // Assuming `pair[1]` is a File object. You might need to adjust this
-              // based on how your backend returns document information after upload.
-              // For now, let's just add a placeholder or simple representation.
-              documentsArray.push({ filename: pair[1].name, url: '#' }); 
-            }
-          }
-          newProfile = {
-            ...response.data,
-            documents: [...(user.profile.documents || []), ...documentsArray]
-          };
-        }
+        // The backend should return the complete updated profile, including documents.
+        // If not, the backend needs to be adjusted to do so.
+        const newProfile = response.data.profile || response.data; // Assuming backend returns full user or just profile
 
-        const updatedUser: User = { ...user, profile: newProfile };
+        const updatedUser: User = {
+          ...user,
+          profile: newProfile,
+          // Ensure other top-level fields are updated if backend returns them
+          firstName: response.data.firstName || user.firstName,
+          lastName: response.data.lastName || user.lastName,
+          email: response.data.email || user.email,
+          role: response.data.role || user.role,
+          isActive: response.data.isActive ?? user.isActive,
+          verificationStatus: response.data.verificationStatus || user.verificationStatus,
+          updatedAt: response.data.updatedAt ? new Date(response.data.updatedAt) : new Date()
+        };
+
         setUser(updatedUser);
 
         // Check if profile is complete after update
@@ -307,9 +303,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (isComplete) {
           // Redirect to role-specific dashboard after profile completion
           const redirectTo = updatedUser.role === 'donor'
-            ? '/dashboard/DonorDashboard'
+            ? '/donor/dashboard'
             : updatedUser.role === 'acceptor'
-              ? '/dashboard/AcceptorDashboard'
+              ? '/acceptor/dashboard'
               : '/';
           return {
             success: true,

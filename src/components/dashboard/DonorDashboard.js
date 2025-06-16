@@ -15,6 +15,7 @@ import {
   TableRow,
   IconButton,
   Tooltip,
+  Button,
 } from '@mui/material';
 import {
   BarChart,
@@ -37,9 +38,11 @@ import {
   AttachMoney,
   Campaign,
   MoreVert,
+  Calculate,
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext.tsx';
 import DashboardLayout from './DashboardLayout';
+import { useNavigate } from 'react-router-dom';
 
 // Sample data for charts
 const monthlyDonations = [
@@ -68,6 +71,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const DonorDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <DashboardLayout>
