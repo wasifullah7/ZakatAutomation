@@ -14,6 +14,7 @@ import AcceptorApplicationsPage from './pages/admin/AcceptorApplicationsPage';
 import ApplicationHistoryPage from './pages/admin/ApplicationHistoryPage';
 import ZakatCalculatorPage from './pages/ZakatCalculatorPage';
 import ApprovedAcceptorsPage from './pages/admin/ApprovedAcceptorsPage';
+import ApplicationStatusPage from './pages/ApplicationStatusPage';
 import './App.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -184,6 +185,8 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              
+              <Route path="/requests" element={<ApplicationStatusPage />} />
               
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

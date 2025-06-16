@@ -120,9 +120,15 @@ const DashboardLayout = ({ children }) => {
       roles: ['donor'],
     },
     {
-      text: 'My Requests',
+      text: 'Application Status',
       icon: <PaymentIcon />,
       path: '/requests',
+      roles: ['acceptor'],
+    },
+    {
+      text: 'My Application Form',
+      icon: <PersonIcon />,
+      path: '/acceptor/profile',
       roles: ['acceptor'],
     },
   ];

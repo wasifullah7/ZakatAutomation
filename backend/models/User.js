@@ -94,7 +94,7 @@ const userSchema = new mongoose.Schema({
     zakatReason: {
       type: String,
       required: function() { return this.role === 'acceptor'; },
-      minlength: 100
+      minlength: 10
     },
     documents: [
       {
