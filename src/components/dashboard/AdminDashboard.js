@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Grid,
@@ -17,6 +17,7 @@ import {
   Tooltip,
   Button,
   Chip,
+  useTheme,
 } from '@mui/material';
 import {
   BarChart,
@@ -39,40 +40,39 @@ import {
   AttachMoney,
   Campaign,
   MoreVert,
-  Add,
   CheckCircle,
   Warning,
   Error,
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 import DashboardLayout from './DashboardLayout';
-
-// Sample data for charts
-const monthlyStats = [
-  { month: 'Jan', donations: 4000, requests: 3000 },
-  { month: 'Feb', donations: 3000, requests: 2000 },
-  { month: 'Mar', donations: 2000, requests: 4000 },
-  { month: 'Apr', donations: 2780, requests: 2780 },
-  { month: 'May', donations: 1890, requests: 1890 },
-  { month: 'Jun', donations: 2390, requests: 2390 },
-];
-
-const userDistribution = [
-  { name: 'Donors', value: 400 },
-  { name: 'Acceptors', value: 300 },
-  { name: 'Admins', value: 100 },
-];
-
-const recentActivities = [
-  { id: 1, type: 'Donation', amount: 1000, user: 'John Doe', date: '2024-03-15', status: 'Completed' },
-  { id: 2, type: 'Request', amount: 500, user: 'Jane Smith', date: '2024-03-10', status: 'Pending' },
-  { id: 3, type: 'Donation', amount: 750, user: 'Mike Johnson', date: '2024-03-05', status: 'Rejected' },
-];
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
+import ApprovedAcceptorsTable from '../admin/ApprovedAcceptorsTable';
+import { adminAPI } from '../../services/api';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
+  const theme = useTheme();
+
+  const [monthlyStats, setMonthlyStats] = useState([
+    { month: 'Jan', donations: 4000, requests: 3000 },
+    { month: 'Feb', donations: 3000, requests: 2000 },
+    { month: 'Mar', donations: 2000, requests: 4000 },
+    { month: 'Apr', donations: 2780, requests: 2780 },
+    { month: 'May', donations: 1890, requests: 1890 },
+    { month: 'Jun', donations: 2390, requests: 2390 },
+  ]);
+
+  const [userDistribution, setUserDistribution] = useState([
+    { name: 'Donors', value: 400 },
+    { name: 'Acceptors', value: 300 },
+    { name: 'Admins', value: 100 },
+  ]);
+
+  // Static values for active requests and total users
+  const activeRequests = 10;
+  const totalUsers = 40;
+
+  const COLORS = [theme.palette.primary.main, theme.palette.success.main, theme.palette.warning.main];
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -105,105 +105,97 @@ const AdminDashboard = () => {
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Grid container spacing={3}>
           {/* Welcome Section */}
-          <Grid item xs={12}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Grid item xs={12} md={4}>
+            <Box
+              sx={{
+                p: 3,
+                borderRadius: '12px',
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)'
+                  : 'linear-gradient(135deg, #f0f2f5 0%, #e0e4e8 100%)',
+                boxShadow: theme.shadows[4],
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                color: theme.palette.mode === 'dark' ? 'white' : theme.palette.text.primary,
+                height: '100%', // Ensure it matches height of adjacent cards
+              }}
+            >
               <div>
-                <Typography variant="h4" gutterBottom>
-                  Welcome back, {user?.firstName}!
+                <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
+                  Welcome back, {user?.firstName}!<br/>
                 </Typography>
-                <Typography variant="subtitle1" color="text.secondary">
+                <Typography variant="subtitle1" color="inherit">
                   Here's an overview of the system's performance
                 </Typography>
               </div>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<Add />}
-                onClick={() => {/* Handle new action */}}
-              >
-                New Action
-              </Button>
             </Box>
           </Grid>
 
-          {/* Stats Cards */}
-          <Grid item xs={12} md={3}>
-            <Card>
+          {/* Active Requests Card */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Card sx={{ borderRadius: '12px', boxShadow: theme.shadows[4] }}>
               <CardContent>
                 <Box display="flex" alignItems="center" mb={2}>
-                  <AttachMoney sx={{ color: 'primary.main', mr: 1 }} />
-                  <Typography variant="h6">Total Donations</Typography>
+                  <Campaign sx={{ color: 'success.main', mr: 1, fontSize: 30 }} />
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Active Requests</Typography>
                 </Box>
-                <Typography variant="h4">$45,570</Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.success.dark }}>{activeRequests}</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  +15% from last month
+                  This is the current number of active requests.
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={3}>
-            <Card>
+          {/* Total Users Card */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Card sx={{ borderRadius: '12px', boxShadow: theme.shadows[4] }}>
               <CardContent>
                 <Box display="flex" alignItems="center" mb={2}>
-                  <Campaign sx={{ color: 'success.main', mr: 1 }} />
-                  <Typography variant="h6">Active Requests</Typography>
+                  <People sx={{ color: 'info.main', mr: 1, fontSize: 30 }} />
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Total Users</Typography>
                 </Box>
-                <Typography variant="h4">12</Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.info.dark }}>{totalUsers}</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  3 new this week
+                  This is the total number of users.
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
-
-          <Grid item xs={12} md={3}>
-            <Card>
-              <CardContent>
-                <Box display="flex" alignItems="center" mb={2}>
-                  <People sx={{ color: 'info.main', mr: 1 }} />
-                  <Typography variant="h6">Total Users</Typography>
-                </Box>
-                <Typography variant="h4">800</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  +50 this month
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} md={3}>
-            <Card>
-              <CardContent>
-                <Box display="flex" alignItems="center" mb={2}>
-                  <TrendingUp sx={{ color: 'warning.main', mr: 1 }} />
-                  <Typography variant="h6">Success Rate</Typography>
-                </Box>
-                <Typography variant="h4">92%</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  +3% from last month
-                </Typography>
-              </CardContent>
-            </Card>
+          
+          {/* Approved Acceptors Table */}
+          <Grid item xs={12}>
+            <ApprovedAcceptorsTable />
           </Grid>
 
           {/* Monthly Stats Chart */}
-          <Grid item xs={12} md={8}>
-            <Card>
+          <Grid item xs={12} md={12}>
+            <Card sx={{ borderRadius: '12px', boxShadow: theme.shadows[4] }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                   Monthly Statistics
                 </Typography>
-                <Box sx={{ height: 300 }}>
+                <Box sx={{ height: 350 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={monthlyStats}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="month" />
                       <YAxis />
-                      <RechartsTooltip />
+                      <RechartsTooltip 
+                        cursor={{ fill: 'transparent' }}
+                        contentStyle={{
+                          backgroundColor: theme.palette.background.paper,
+                          border: '1px solid rgba(0,0,0,0.1)',
+                          borderRadius: '8px',
+                          boxShadow: theme.shadows[2],
+                        }}
+                        labelStyle={{ color: theme.palette.text.primary }}
+                        itemStyle={{ color: theme.palette.text.secondary }}
+                      />
                       <Legend />
-                      <Bar dataKey="donations" fill="#8884d8" name="Donations" />
-                      <Bar dataKey="requests" fill="#82ca9d" name="Requests" />
+                      <Bar dataKey="donations" fill={theme.palette.primary.main} name="Donations" />
+                      <Bar dataKey="requests" fill={theme.palette.success.main} name="Requests" />
                     </BarChart>
                   </ResponsiveContainer>
                 </Box>
@@ -212,13 +204,13 @@ const AdminDashboard = () => {
           </Grid>
 
           {/* User Distribution Chart */}
-          <Grid item xs={12} md={4}>
-            <Card>
+          <Grid item xs={12} md={12}>
+            <Card sx={{ borderRadius: '12px', boxShadow: theme.shadows[4] }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                   User Distribution
                 </Typography>
-                <Box sx={{ height: 300 }}>
+                <Box sx={{ height: 350 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -234,61 +226,20 @@ const AdminDashboard = () => {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <RechartsTooltip />
+                      <RechartsTooltip 
+                        contentStyle={{
+                          backgroundColor: theme.palette.background.paper,
+                          border: '1px solid rgba(0,0,0,0.1)',
+                          borderRadius: '8px',
+                          boxShadow: theme.shadows[2],
+                        }}
+                        labelStyle={{ color: theme.palette.text.primary }}
+                        itemStyle={{ color: theme.palette.text.secondary }}
+                      />
                       <Legend />
                     </PieChart>
                   </ResponsiveContainer>
                 </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Recent Activities Table */}
-          <Grid item xs={12}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Recent Activities
-                </Typography>
-                <TableContainer component={Paper} elevation={0}>
-                  <Table size="small" aria-label="recent activities table">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Type</TableCell>
-                        <TableCell align="right">Amount</TableCell>
-                        <TableCell>User</TableCell>
-                        <TableCell>Date</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell align="right">Actions</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {recentActivities.map((activity) => (
-                        <TableRow key={activity.id}>
-                          <TableCell>{activity.type}</TableCell>
-                          <TableCell align="right">${activity.amount}</TableCell>
-                          <TableCell>{activity.user}</TableCell>
-                          <TableCell>{activity.date}</TableCell>
-                          <TableCell>
-                            <Chip
-                              label={activity.status}
-                              color={getStatusColor(activity.status)}
-                              icon={getStatusIcon(activity.status)}
-                              size="small"
-                            />
-                          </TableCell>
-                          <TableCell align="right">
-                            <Tooltip title="View Details">
-                              <IconButton size="small">
-                                <MoreVert />
-                              </IconButton>
-                            </Tooltip>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
               </CardContent>
             </Card>
           </Grid>
@@ -298,4 +249,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard; 
+export default AdminDashboard;

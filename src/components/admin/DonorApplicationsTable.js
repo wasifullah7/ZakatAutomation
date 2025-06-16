@@ -12,25 +12,32 @@ import {
   TableCell,
   TableBody,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   Stack,
+  IconButton,
+  Tooltip,
+  useTheme,
 } from '@mui/material';
-import { Check, Close } from '@mui/icons-material';
+import {
+  Check as CheckIcon,
+  Close as CloseIcon,
+  Visibility as VisibilityIcon,
+} from '@mui/icons-material';
 import { adminAPI } from '../../services/api';
 import { toast } from 'react-toastify';
+import ApplicationDetailModal from './ApplicationDetailModal';
 
 const DonorApplicationsTable = () => {
   const [donors, setDonors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [openDialog, setOpenDialog] = useState(false);
-  const [selectedDonor, setSelectedDonor] = useState(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedUserForDetails, setSelectedUserForDetails] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [actionType, setActionType] = useState('');
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedDonor, setSelectedDonor] = useState(null);
+
+  const theme = useTheme();
 
   useEffect(() => {
     fetchDonors();
@@ -47,6 +54,16 @@ const DonorApplicationsTable = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOpenDetailsModal = (user) => {
+    setSelectedUserForDetails(user);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailModalOpen(false);
+    setSelectedUserForDetails(null);
   };
 
   const handleAction = (donor, type) => {
@@ -113,7 +130,12 @@ const DonorApplicationsTable = () => {
         <Paper elevation={3} sx={{ borderRadius: '8px', overflow: 'hidden' }}>
           <TableContainer>
             <Table size="medium" sx={{ minWidth: 650 }}>
-              <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
+              <TableHead sx={{
+                backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.default : theme.palette.grey[200],
+                '& th': {
+                  color: theme.palette.mode === 'dark' ? theme.palette.text.primary : theme.palette.text.secondary,
+                }
+              }}>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 'bold' }}>Name</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
@@ -136,25 +158,52 @@ const DonorApplicationsTable = () => {
                       </Typography>
                     </TableCell>
                     <TableCell sx={{ textAlign: 'center' }}>
-                      <Stack direction="row" spacing={1} justifyContent="center">
-                        <Button
-                          variant="contained"
-                          color="success"
-                          size="small"
-                          startIcon={<Check />}
-                          onClick={() => handleAction(donor, 'accept')}
-                        >
-                          Accept
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          size="small"
-                          startIcon={<Close />}
-                          onClick={() => handleAction(donor, 'reject')}
-                        >
-                          Reject
-                        </Button>
+                      <Stack direction="row" spacing={1} justifyContent="center" alignItems="center">
+                        <Tooltip title="View Details">
+                          <IconButton
+                            color="primary"
+                            size="small"
+                            onClick={() => handleOpenDetailsModal(donor)}
+                            sx={{ 
+                              '&:hover': { 
+                                backgroundColor: 'primary.light',
+                                color: 'white'
+                              }
+                            }}
+                          >
+                            <VisibilityIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Accept Application">
+                          <IconButton
+                            color="success"
+                            size="small"
+                            onClick={() => handleAction(donor, 'accept')}
+                            sx={{ 
+                              '&:hover': { 
+                                backgroundColor: 'success.light',
+                                color: 'white'
+                              }
+                            }}
+                          >
+                            <CheckIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Reject Application">
+                          <IconButton
+                            color="error"
+                            size="small"
+                            onClick={() => handleAction(donor, 'reject')}
+                            sx={{ 
+                              '&:hover': { 
+                                backgroundColor: 'error.light',
+                                color: 'white'
+                              }
+                            }}
+                          >
+                            <CloseIcon />
+                          </IconButton>
+                        </Tooltip>
                       </Stack>
                     </TableCell>
                   </TableRow>
@@ -165,39 +214,14 @@ const DonorApplicationsTable = () => {
         </Paper>
       )}
 
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ backgroundColor: actionType === 'accept' ? 'success.main' : 'error.main', color: 'white' }}>
-          {actionType === 'accept' ? 'Confirm Acceptance' : 'Reject Donor Application'}
-        </DialogTitle>
-        <DialogContent dividers>
-          {actionType === 'accept' ? (
-            <Typography variant="body1">Are you sure you want to accept {selectedDonor?.firstName} {selectedDonor?.lastName}'s application?</Typography>
-          ) : (
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Reason for Rejection (Optional)"
-              type="text"
-              fullWidth
-              multiline
-              rows={4}
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              variant="outlined"
-            />
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} color="inherit">Cancel</Button>
-          <Button
-            onClick={handleSubmitAction}
-            color={actionType === 'accept' ? 'success' : 'error'}
-            variant="contained"
-          >
-            {actionType === 'accept' ? 'Accept' : 'Reject'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {selectedUserForDetails && (
+        <ApplicationDetailModal
+          isOpen={isDetailModalOpen}
+          onClose={handleCloseDetailsModal}
+          userData={selectedUserForDetails}
+          onStatusUpdate={handleSubmitAction}
+        />
+      )}
     </Box>
   );
 };

@@ -10,7 +10,7 @@ const Navbar = () => {
     <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom">
       <div className="container-fluid">
         <Link className="navbar-brand" to="/dashboard">
-          <img src="/logo.png" alt="Zakat Automation" height="40" />
+          <img src="/th.jpeg" alt="Zakat Automation" height="40" />
         </Link>
 
         <div className="d-flex align-items-center">

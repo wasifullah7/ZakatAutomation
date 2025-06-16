@@ -1,6 +1,25 @@
-import React, { useState } from 'react';
-import { Box, useTheme, useMediaQuery, AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Menu, MenuItem, Avatar, ListItemAvatar } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import {
+  Box,
+  useTheme,
+  useMediaQuery,
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Menu,
+  MenuItem,
+  Avatar,
+  ListItemAvatar,
+  CssBaseline,
+} from '@mui/material';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   Dashboard as DashboardIcon,
@@ -14,15 +33,22 @@ import {
   Logout as LogoutIcon,
   Person as PersonIcon,
   Calculate as CalculateIcon,
+  Brightness4 as Brightness4Icon,
+  Brightness7 as Brightness7Icon,
 } from '@mui/icons-material';
+import { ColorModeContext } from '../../App';
+
+const drawerWidth = 240;
 
 const DashboardLayout = ({ children }) => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [anchorEl, setAnchorEl] = useState(null);
+  const colorMode = useContext(ColorModeContext);
 
   const handleDrawerToggle = () => {
     setSidebarOpen(!sidebarOpen);
@@ -50,118 +76,123 @@ const DashboardLayout = ({ children }) => {
     }
   };
 
-  const drawer = (
-    <div>
-      <Toolbar>
-        <Typography variant="h6" noWrap component="div">
-          Zakat System
-        </Typography>
-      </Toolbar>
-      <Divider />
-      <List>
-        <ListItem button onClick={() => navigate('/dashboard')}>
-          <ListItemIcon>
-            <DashboardIcon />
-          </ListItemIcon>
-          <ListItemText primary="Dashboard" />
-        </ListItem>
-        <ListItem button onClick={() => navigate('/zakat-calculator')}>
-          <ListItemIcon>
-            <CalculateIcon />
-          </ListItemIcon>
-          <ListItemText primary="Zakat Calculator" />
-        </ListItem>
-        {user?.role === 'admin' && (
-          <>
-            <ListItem button onClick={() => navigate('/admin/donor-applications')}>
-              <ListItemIcon>
-                <PeopleIcon />
-              </ListItemIcon>
-              <ListItemText primary="Donor Applications" />
-            </ListItem>
-            <ListItem button onClick={() => navigate('/admin/acceptor-applications')}>
-              <ListItemIcon>
-                <PeopleIcon />
-              </ListItemIcon>
-              <ListItemText primary="Acceptor Applications" />
-            </ListItem>
-            <ListItem button onClick={() => navigate('/admin/application-history')}>
-              <ListItemIcon>
-                <HistoryIcon />
-              </ListItemIcon>
-              <ListItemText primary="Application History" />
-            </ListItem>
-          </>
-        )}
-        {user?.role === 'donor' && (
-          <ListItem button onClick={() => navigate('/donations')}>
-            <ListItemIcon>
-              <PaymentIcon />
-            </ListItemIcon>
-            <ListItemText primary="Donations" />
-          </ListItem>
-        )}
-        {user?.role === 'acceptor' && (
-          <ListItem button onClick={() => navigate('/requests')}>
-            <ListItemIcon>
-              <PaymentIcon />
-            </ListItemIcon>
-            <ListItemText primary="My Requests" />
-          </ListItem>
-        )}
-      </List>
-    </div>
-  );
+  const menuItems = [
+    {
+      text: 'Dashboard',
+      icon: <DashboardIcon />,
+      path: '/dashboard',
+      roles: ['admin', 'donor', 'acceptor'],
+    },
+    {
+      text: 'Zakat Calculator',
+      icon: <CalculateIcon />,
+      path: '/zakat-calculator',
+      roles: ['admin', 'donor', 'acceptor'],
+    },
+    {
+      text: 'Donor Applications',
+      icon: <PeopleIcon />,
+      path: '/admin/donor-applications',
+      roles: ['admin'],
+    },
+    {
+      text: 'Acceptor Applications',
+      icon: <PeopleIcon />,
+      path: '/admin/acceptor-applications',
+      roles: ['admin'],
+    },
+    {
+      text: 'Application History',
+      icon: <HistoryIcon />,
+      path: '/admin/application-history',
+      roles: ['admin'],
+    },
+    {
+      text: 'Approved Acceptors',
+      icon: <PeopleIcon />,
+      path: '/admin/approved-acceptors',
+      roles: ['admin'],
+    },
+    {
+      text: 'My Donations',
+      icon: <PaymentIcon />,
+      path: '/donations',
+      roles: ['donor'],
+    },
+    {
+      text: 'My Requests',
+      icon: <PaymentIcon />,
+      path: '/requests',
+      roles: ['acceptor'],
+    },
+  ];
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+      <CssBaseline />
+      <AppBar
+        position="fixed"
+        sx={{
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          backgroundColor: theme.palette.background.paper,
+          boxShadow: theme.shadows[3],
+        }}
+      >
         <Toolbar>
           <IconButton
             color="inherit"
             aria-label="toggle drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2 }}
+            sx={{
+              mr: 2,
+              color: theme.palette.primary.main,
+            }}
           >
             <MenuIcon />
           </IconButton>
           <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
-            <Typography 
-              variant="h5" 
-              component="div" 
-              sx={{ 
-                fontWeight: 700,
-                background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+            <Typography
+              variant="h5"
+              component="div"
+              sx={{
+                fontWeight: 800,
+                background: 'linear-gradient(90deg, #6a11cb 0%, #2575fc 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                letterSpacing: '0.5px',
+                letterSpacing: '1.5px',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1
+                gap: 1,
+                py: 1,
               }}
             >
-              <img 
-                src="/logo.png" 
-                alt="Zakat Logo" 
-                style={{ 
-                  height: '32px', 
-                  marginRight: '8px',
-                  filter: 'brightness(0) invert(1)'
-                }} 
-              />
-              Zakat Automation
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'block' } }}>Zakat Automation</Box>
             </Typography>
           </Box>
-          <IconButton color="inherit">
+          <IconButton color="inherit" sx={{ color: theme.palette.text.secondary }}>
             <NotificationsIcon />
+          </IconButton>
+          <IconButton
+            sx={{
+              ml: 1,
+              color: theme.palette.mode === 'dark' ? theme.palette.warning.main : theme.palette.text.secondary,
+              '&:hover': {
+                color: theme.palette.mode === 'dark' ? theme.palette.warning.light : theme.palette.primary.main,
+              },
+            }}
+            onClick={colorMode.toggleColorMode}
+            color="inherit"
+          >
+            {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
           </IconButton>
           <IconButton
             color="inherit"
             onClick={handleProfileMenuOpen}
-            sx={{ ml: 1 }}
+            sx={{ ml: 1, color: theme.palette.text.secondary }}
           >
-            <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+            <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.main }}>
               {user?.firstName?.[0]?.toUpperCase()}
             </Avatar>
           </IconButton>
@@ -200,12 +231,12 @@ const DashboardLayout = ({ children }) => {
           >
             <MenuItem onClick={handleProfileClick}>
               <ListItemAvatar>
-                <Avatar sx={{ bgcolor: 'primary.main' }}>
+                <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
                   <PersonIcon />
                 </Avatar>
               </ListItemAvatar>
-              <ListItemText 
-                primary="Profile" 
+              <ListItemText
+                primary="Profile"
                 secondary={user?.email}
               />
             </MenuItem>
@@ -222,93 +253,56 @@ const DashboardLayout = ({ children }) => {
       <Drawer
         variant="permanent"
         sx={{
-          width: sidebarOpen ? 240 : 65,
+          width: sidebarOpen ? drawerWidth : theme.spacing(7) + 1,
           flexShrink: 0,
-          transition: theme.transitions.create('width', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-          }),
-          [`& .MuiDrawer-paper`]: { 
-            width: sidebarOpen ? 240 : 65,
+          [`& .MuiDrawer-paper`]: {
+            width: sidebarOpen ? drawerWidth : theme.spacing(7) + 1,
+            boxSizing: 'border-box',
+            overflowX: 'hidden',
             transition: theme.transitions.create('width', {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.enteringScreen,
             }),
-            boxSizing: 'border-box',
-            overflowX: 'hidden'
           },
         }}
         open={sidebarOpen}
       >
-        <Toolbar>
-          {sidebarOpen ? (
-            <Typography variant="h6" noWrap component="div">
-              Zakat System
-            </Typography>
-          ) : (
-            <Typography variant="h6" noWrap component="div" sx={{ textAlign: 'center' }}>
-              ZS
-            </Typography>
-          )}
-        </Toolbar>
+        <Toolbar />
         <Divider />
         <List>
-          <ListItem button onClick={() => navigate('/dashboard')} sx={{ minHeight: 48, px: 2.5 }}>
-            <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
-              <DashboardIcon />
-            </ListItemIcon>
-            {sidebarOpen && <ListItemText primary="Dashboard" />}
-          </ListItem>
-          <ListItem button onClick={() => navigate('/zakat-calculator')} sx={{ minHeight: 48, px: 2.5 }}>
-            <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
-              <CalculateIcon />
-            </ListItemIcon>
-            {sidebarOpen && <ListItemText primary="Zakat Calculator" />}
-          </ListItem>
-          {user?.role === 'admin' && (
-            <>
-              <ListItem button onClick={() => navigate('/admin/donor-applications')} sx={{ minHeight: 48, px: 2.5 }}>
-                <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
-                  <PeopleIcon />
-                </ListItemIcon>
-                {sidebarOpen && <ListItemText primary="Donor Applications" />}
-              </ListItem>
-              <ListItem button onClick={() => navigate('/admin/acceptor-applications')} sx={{ minHeight: 48, px: 2.5 }}>
-                <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
-                  <PeopleIcon />
-                </ListItemIcon>
-                {sidebarOpen && <ListItemText primary="Acceptor Applications" />}
-              </ListItem>
-              <ListItem button onClick={() => navigate('/admin/application-history')} sx={{ minHeight: 48, px: 2.5 }}>
-                <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
-                  <HistoryIcon />
-                </ListItemIcon>
-                {sidebarOpen && <ListItemText primary="Application History" />}
-              </ListItem>
-            </>
-          )}
-          {user?.role === 'donor' && (
-            <ListItem button onClick={() => navigate('/donations')} sx={{ minHeight: 48, px: 2.5 }}>
-              <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
-                <PaymentIcon />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="Donations" />}
-            </ListItem>
-          )}
-          {user?.role === 'acceptor' && (
-            <ListItem button onClick={() => navigate('/requests')} sx={{ minHeight: 48, px: 2.5 }}>
-              <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
-                <PaymentIcon />
-              </ListItemIcon>
-              {sidebarOpen && <ListItemText primary="My Requests" />}
-            </ListItem>
-          )}
-          <ListItem button onClick={() => navigate('/settings')} sx={{ minHeight: 48, px: 2.5 }}>
-            <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
-              <SettingsIcon />
-            </ListItemIcon>
-            {sidebarOpen && <ListItemText primary="Settings" />}
-          </ListItem>
+          {menuItems.map((item, index) => {
+            if (item.roles.includes(user?.role)) {
+              return (
+                <ListItem
+                  button
+                  key={index}
+                  onClick={() => navigate(item.path)}
+                  sx={{
+                    minHeight: 48,
+                    justifyContent: sidebarOpen ? 'initial' : 'center',
+                    px: 2.5,
+                    backgroundColor: location.pathname === item.path ? theme.palette.action.selected : 'inherit',
+                    '&:hover': {
+                      backgroundColor: theme.palette.action.hover,
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: sidebarOpen ? 3 : 'auto',
+                      justifyContent: 'center',
+                      color: location.pathname === item.path ? theme.palette.primary.main : theme.palette.text.secondary,
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.text} sx={{ opacity: sidebarOpen ? 1 : 0 }} />
+                </ListItem>
+              );
+            }
+            return null;
+          })}
         </List>
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
@@ -319,4 +313,4 @@ const DashboardLayout = ({ children }) => {
   );
 };
 
-export default DashboardLayout; 
+export default DashboardLayout;

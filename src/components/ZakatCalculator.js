@@ -306,32 +306,74 @@ function ZakatCalculator() {
           Your Zakat Summary
         </Typography>
         <Grid container spacing={3} justifyContent="center" sx={{ mb: { xs: 3, md: 4 } }}>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="subtitle1" sx={{ opacity: 0.8, color: theme.palette.text.secondary }}>Total Assets Value:</Typography>
-            <Typography variant="h5" sx={{ fontWeight: 'fontWeightBold', color: theme.palette.text.primary }}>{totalAssetsValue} PKR</Typography>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{
+              borderRadius: '12px',
+              background: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.background.default,
+              boxShadow: theme.shadows[4]
+            }}>
+              <CardContent>
+                <Typography variant="subtitle1" color={theme.palette.text.secondary} gutterBottom>
+                  Total Assets Value:
+                </Typography>
+                <Typography variant="h5" color="primary.main" sx={{ fontWeight: 'fontWeightBold' }}>
+                  {totalAssetsValue} PKR
+                </Typography>
+              </CardContent>
+            </Card>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="subtitle1" sx={{ opacity: 0.8, color: theme.palette.text.secondary }}>Total Liabilities:</Typography>
-            <Typography variant="h5" sx={{ fontWeight: 'fontWeightBold', color: theme.palette.text.primary }}>{totalLiabilities} PKR</Typography>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{
+              borderRadius: '12px',
+              background: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.background.default,
+              boxShadow: theme.shadows[4]
+            }}>
+              <CardContent>
+                <Typography variant="subtitle1" color={theme.palette.text.secondary} gutterBottom>
+                  Total Liabilities:
+                </Typography>
+                <Typography variant="h5" color="error.main" sx={{ fontWeight: 'fontWeightBold' }}>
+                  {totalLiabilities} PKR
+                </Typography>
+              </CardContent>
+            </Card>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="subtitle1" sx={{ opacity: 0.8, color: theme.palette.text.secondary }}>Total Zakatable Amount:</Typography>
-            <Typography variant="h5" sx={{ fontWeight: 'fontWeightBold', color: theme.palette.text.primary }}>{totalZakatableAmount} PKR</Typography>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{
+              borderRadius: '12px',
+              background: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.background.default,
+              boxShadow: theme.shadows[4]
+            }}>
+              <CardContent>
+                <Typography variant="subtitle1" color={theme.palette.text.secondary} gutterBottom>
+                  Total Zakatable Amount:
+                </Typography>
+                <Typography variant="h5" color="info.main" sx={{ fontWeight: 'fontWeightBold' }}>
+                  {totalZakatableAmount} PKR
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{
+              borderRadius: '12px',
+              background: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.background.default,
+              boxShadow: theme.shadows[4]
+            }}>
+              <CardContent>
+                <Typography variant="subtitle1" color={theme.palette.text.secondary} gutterBottom>
+                  Total Zakat Due (2.5%):
+                </Typography>
+                <Typography variant="h5" color="success.main" sx={{ fontWeight: 'fontWeightBold' }}>
+                  {totalZakat} PKR
+                </Typography>
+              </CardContent>
+            </Card>
           </Grid>
         </Grid>
-        <Box
-          sx={{
-            mt: { xs: 3, md: 4 },
-            p: { xs: 2, md: 3 },
-            background: `linear-gradient(45deg, ${theme.palette.primary.light} 30%, ${theme.palette.primary.main} 90%)`,
-            borderRadius: '12px',
-            color: 'white',
-            boxShadow: theme.shadows[4],
-          }}
-        >
-          <Typography variant="h5" sx={{ fontWeight: 'fontWeightBold' }}>Total Zakat Due</Typography>
-          <Typography variant="h3" sx={{ fontWeight: 'fontWeightBold', mt: 1 }}>{totalZakat} PKR</Typography>
-        </Box>
       </Paper>
     </Box>
   );

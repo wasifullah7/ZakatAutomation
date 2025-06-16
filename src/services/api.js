@@ -183,6 +183,7 @@ export const adminAPI = {
   approveDonor: (id, data) => api.put(`/admin/approve-donor/${id}`, data),
   getAcceptorStats: () => api.get('/admin/stats/acceptors'),
   getDonorStats: () => api.get('/admin/stats/donors'),
+  getDashboardStats: () => api.get('/admin/dashboard-stats'),
 };
 
 export default api; 

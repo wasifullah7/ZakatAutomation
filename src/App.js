@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo, createContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.tsx';
 import SignIn from './pages/SignIn/SignIn';
@@ -13,15 +13,15 @@ import DonorApplicationsPage from './pages/admin/DonorApplicationsPage';
 import AcceptorApplicationsPage from './pages/admin/AcceptorApplicationsPage';
 import ApplicationHistoryPage from './pages/admin/ApplicationHistoryPage';
 import ZakatCalculatorPage from './pages/ZakatCalculatorPage';
+import ApprovedAcceptorsPage from './pages/admin/ApprovedAcceptorsPage';
 import './App.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { PaletteMode } from '@mui/material';
 
-const theme = createTheme({
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-  },
+export const ColorModeContext = createContext({
+  toggleColorMode: () => {},
 });
 
 const ProtectedRoute = ({ children, roles }) => {
@@ -57,105 +57,140 @@ const RoleBasedRedirect = () => {
 };
 
 function App() {
+  const [mode, setMode] = useState('light'); // Default to light mode
+
+  const colorMode = useMemo(
+    () => ({
+      toggleColorMode: () => {
+        setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+      },
+    }),
+    [],
+  );
+
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode,
+        },
+        typography: {
+          fontFamily: '"Manrope", sans-serif',
+        },
+      }),
+    [mode],
+  );
+
   return (
-    <AuthProvider>
+    <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
-        <Router>
-          <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
-          <Routes>
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-            
-            <Route path="/" element={<RoleBasedRedirect />} />
-            <Route path="/dashboard" element={<RoleBasedRedirect />} />
-            
-            <Route
-              path="/admin/dashboard"
-              element={
-                <ProtectedRoute roles={['admin']}>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/admin/donor-applications"
-              element={
-                <ProtectedRoute roles={['admin']}>
-                  <DonorApplicationsPage />
-                </ProtectedRoute>
-              }
-            />
+        <AuthProvider>
+          <Router>
+            <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+            <Routes>
+              <Route path="/signin" element={<SignIn />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+              
+              <Route path="/" element={<RoleBasedRedirect />} />
+              <Route path="/dashboard" element={<RoleBasedRedirect />} />
+              
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <ProtectedRoute roles={['admin']}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/admin/donor-applications"
+                element={
+                  <ProtectedRoute roles={['admin']}>
+                    <DonorApplicationsPage />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/admin/acceptor-applications"
-              element={
-                <ProtectedRoute roles={['admin']}>
-                  <AcceptorApplicationsPage />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/admin/acceptor-applications"
+                element={
+                  <ProtectedRoute roles={['admin']}>
+                    <AcceptorApplicationsPage />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/admin/application-history"
-              element={
-                <ProtectedRoute roles={['admin']}>
-                  <ApplicationHistoryPage />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/admin/application-history"
+                element={
+                  <ProtectedRoute roles={['admin']}>
+                    <ApplicationHistoryPage />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/zakat-calculator"
-              element={
-                <ProtectedRoute roles={['admin', 'donor', 'acceptor']}>
-                  <ZakatCalculatorPage />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/admin/approved-acceptors"
+                element={
+                  <ProtectedRoute roles={['admin']}>
+                    <ApprovedAcceptorsPage />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/donor/dashboard"
-              element={
-                <ProtectedRoute roles={['donor']}>
-                  <DonorDashboard />
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/acceptor/dashboard"
-              element={
-                <ProtectedRoute roles={['acceptor']}>
-                  <AcceptorDashboard />
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/donor/profile"
-              element={
-                <ProtectedRoute roles={['donor']}>
-                  <DonorProfile />
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/acceptor/profile"
-              element={
-                <ProtectedRoute roles={['acceptor']}>
-                  <AcceptorProfile />
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </Router>
+              <Route
+                path="/zakat-calculator"
+                element={
+                  <ProtectedRoute roles={['admin', 'donor', 'acceptor']}>
+                    <ZakatCalculatorPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/donor/dashboard"
+                element={
+                  <ProtectedRoute roles={['donor']}>
+                    <DonorDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/acceptor/dashboard"
+                element={
+                  <ProtectedRoute roles={['acceptor']}>
+                    <AcceptorDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/donor/profile"
+                element={
+                  <ProtectedRoute roles={['donor']}>
+                    <DonorProfile />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/acceptor/profile"
+                element={
+                  <ProtectedRoute roles={['acceptor']}>
+                    <AcceptorProfile />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </Router>
+        </AuthProvider>
       </ThemeProvider>
-    </AuthProvider>
+    </ColorModeContext.Provider>
   );
 }
 
