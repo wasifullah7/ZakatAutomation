@@ -15,8 +15,10 @@ import {
   InputAdornment,
   TablePagination,
   useTheme,
+  Button,
 } from '@mui/material'
 import { Search as SearchIcon } from '@mui/icons-material';
+import * as XLSX from 'xlsx'; // Import xlsx library
 import { adminAPI } from '../../services/api';
 
 const ApprovedAcceptorsTable = () => {
@@ -67,6 +69,51 @@ const ApprovedAcceptorsTable = () => {
     acceptor.profile?.easyPaisaNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     acceptor.profile?.address?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  const handleDownloadExcel = () => {
+    const dataToExport = filteredAcceptors.map(acceptor => ({
+      'First Name': acceptor.firstName,
+      'Last Name': acceptor.lastName,
+      Email: acceptor.email,
+      Role: acceptor.role,
+      'Is Active': acceptor.isActive ? 'Yes' : 'No',
+      Phone: acceptor.profile?.phone || 'N/A',
+      Address: acceptor.profile?.address || 'N/A',
+      City: acceptor.profile?.city || 'N/A',
+      Country: acceptor.profile?.country || 'N/A',
+      'Postal Code': acceptor.profile?.postalCode || 'N/A',
+      'National ID': acceptor.profile?.nationalId || 'N/A',
+      'National ID Expiry': acceptor.profile?.nationalIdExpiry ? new Date(acceptor.profile.nationalIdExpiry).toLocaleDateString() : 'N/A',
+      'Family Size': acceptor.profile?.familySize || 'N/A',
+      'Monthly Income': acceptor.profile?.monthlyIncome || 'N/A',
+      'Monthly Expenses': acceptor.profile?.monthlyExpenses || 'N/A',
+      'Bank Name': acceptor.profile?.bankName || 'N/A',
+      'Bank Branch': acceptor.profile?.bankBranch || 'N/A',
+      'Bank Account Number': acceptor.profile?.bankAccountNumber || 'N/A',
+      Assets: acceptor.profile?.assets?.join(', ') || 'N/A',
+      Liabilities: acceptor.profile?.liabilities?.join(', ') || 'N/A',
+      'Zakat Reason': acceptor.profile?.zakatReason || 'N/A',
+      Documents: acceptor.profile?.documents?.map(doc => `${doc.type} (${doc.filename || 'N/A'})`).join('; ') || 'N/A',
+      'Organization Name': acceptor.profile?.organizationName || 'N/A',
+      'Organization Type': acceptor.profile?.organizationType || 'N/A',
+      'Registration Number': acceptor.profile?.registrationNumber || 'N/A',
+      'Registration Date': acceptor.profile?.registrationDate ? new Date(acceptor.profile.registrationDate).toLocaleDateString() : 'N/A',
+      'Registration Expiry': acceptor.profile?.registrationExpiry ? new Date(acceptor.profile.registrationExpiry).toLocaleDateString() : 'N/A',
+      Needs: acceptor.profile?.needs?.join(', ') || 'N/A',
+      'Emergency Contact Name': acceptor.profile?.emergencyContact?.name || 'N/A',
+      'Emergency Contact Relationship': acceptor.profile?.emergencyContact?.relationship || 'N/A',
+      'Emergency Contact Phone': acceptor.profile?.emergencyContact?.phone || 'N/A',
+      'Verification Status': acceptor.verificationStatus,
+      'Verification Notes': acceptor.profile?.verificationNotes?.map(note => `${note.note} (by ${note.addedBy || 'N/A'} at ${new Date(note.addedAt).toLocaleDateString()})`).join('; ') || 'N/A',
+      'Created At': new Date(acceptor.createdAt).toLocaleDateString(),
+      'Updated At': new Date(acceptor.updatedAt).toLocaleDateString(),
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Approved Acceptors");
+    XLSX.writeFile(wb, "ApprovedAcceptors.xlsx");
+  };
 
   if (loading) {
     return (
@@ -159,6 +206,17 @@ const ApprovedAcceptorsTable = () => {
           />
         </Paper>
       )}
+
+      <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleDownloadExcel}
+          sx={{ borderRadius: '8px', px: 3, py: 1.5 }}
+        >
+          Download Excel Sheet
+        </Button>
+      </Box>
     </Box>
   );
 };

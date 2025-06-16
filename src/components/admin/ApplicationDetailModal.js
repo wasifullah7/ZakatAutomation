@@ -175,25 +175,14 @@ const ApplicationDetailModal = ({ isOpen, onClose, userData }) => {
               />
             </ListItem>
           )}
-          {userData.profile?.bankAccount && (
+          {userData.profile?.bankAccountNumber && (
             <ListItem>
               <ListItemIcon>
                 <MoneyIcon color="primary" />
               </ListItemIcon>
               <ListItemText 
-                primary="Bank Account No." 
-                secondary={userData.profile?.bankAccount} 
-              />
-            </ListItem>
-          )}
-          {userData.profile?.bankCode && (
-            <ListItem>
-              <ListItemIcon>
-                <MoneyIcon color="primary" />
-              </ListItemIcon>
-              <ListItemText 
-                primary="Bank Code" 
-                secondary={userData.profile?.bankCode} 
+                primary="Bank Account Number" 
+                secondary={userData.profile?.bankAccountNumber} 
               />
             </ListItem>
           )}
@@ -215,7 +204,7 @@ const ApplicationDetailModal = ({ isOpen, onClose, userData }) => {
               </ListItemIcon>
               <ListItemText 
                 primary="IBAN" 
-                secondary={userData.profile?.iban} 
+                secondary={userData.profile?.iban || 'N/A'} 
               />
             </ListItem>
           )}
@@ -226,18 +215,18 @@ const ApplicationDetailModal = ({ isOpen, onClose, userData }) => {
               </ListItemIcon>
               <ListItemText 
                 primary="SWIFT Code" 
-                secondary={userData.profile?.swiftCode} 
+                secondary={userData.profile?.swiftCode || 'N/A'} 
               />
             </ListItem>
           )}
-          {!userData.profile?.bankAccount && userData.profile?.easyPaisaNumber && (
+          {(userData.profile?.easyPaisaNumber || userData.profile?.phone) && (
             <ListItem>
               <ListItemIcon>
                 <PhoneIcon color="primary" />
               </ListItemIcon>
               <ListItemText 
                 primary="EasyPaisa Number" 
-                secondary={userData.profile?.easyPaisaNumber} 
+                secondary={userData.profile?.easyPaisaNumber || userData.profile?.phone || 'N/A'} 
               />
             </ListItem>
           )}
