@@ -43,6 +43,8 @@ import {
 import { useAuth } from '../../context/AuthContext.tsx';
 import DashboardLayout from './DashboardLayout';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
+import ApprovedAcceptorsTable from './ApprovedAcceptorsTable';
 
 // Sample data for charts
 const monthlyDonations = [
@@ -72,6 +74,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 const DonorDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
 
   return (
     <DashboardLayout>
@@ -148,25 +151,21 @@ const DonorDashboard = () => {
             </Card>
           </Grid>
 
-          {/* Monthly Donations Chart */}
+          {/* Acceptors List */}
           <Grid item xs={12} md={8}>
-            <Card>
+            <Card sx={{
+              borderRadius: '12px',
+              boxShadow: theme.shadows[4],
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)'
+                : 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+              height: '100%'
+            }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Monthly Donations
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  Acceptors List
                 </Typography>
-                <Box sx={{ height: 300 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={monthlyDonations}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <RechartsTooltip />
-                      <Legend />
-                      <Bar dataKey="amount" fill="#8884d8" name="Donation Amount" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </Box>
+                <ApprovedAcceptorsTable />
               </CardContent>
             </Card>
           </Grid>
