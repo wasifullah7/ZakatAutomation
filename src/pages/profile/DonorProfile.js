@@ -58,41 +58,45 @@ const DonorProfile = () => {
   const validationSchema = Yup.object().shape({
     firstName: Yup.string().required('First name is required'),
     lastName: Yup.string().required('Last name is required'),
-    phone: Yup.string().required('Phone number is required'),
-    address: Yup.string().required('Address is required'),
-    city: Yup.string().required('City is required'),
-    country: Yup.string().required('Country is required'),
-    postalCode: Yup.string().required('Postal code is required'),
-    nationalId: Yup.string().required('National ID is required'),
-    nationalIdExpiry: Yup.date().required('National ID expiry date is required'),
-    bankName: Yup.string().required('Bank name is required'),
-    bankBranch: Yup.string().required('Bank branch is required'),
-    bankAccountNumber: Yup.string().required('Bank account number is required'),
-    organizationName: Yup.string().required('Organization name is required'),
-    organizationType: Yup.string().required('Organization type is required'),
-    registrationNumber: Yup.string().required('Registration number is required'),
-    registrationDate: Yup.date().required('Registration date is required'),
-    registrationExpiry: Yup.date().required('Registration expiry date is required')
+    profile: Yup.object().shape({
+      phone: Yup.string().required('Phone number is required'),
+      address: Yup.string().required('Address is required'),
+      city: Yup.string().required('City is required'),
+      country: Yup.string().required('Country is required'),
+      postalCode: Yup.string().required('Postal code is required'),
+      nationalId: Yup.string().required('National ID is required'),
+      nationalIdExpiry: Yup.date().required('National ID expiry date is required'),
+      bankName: Yup.string().required('Bank name is required'),
+      bankBranch: Yup.string().required('Bank branch is required'),
+      bankAccountNumber: Yup.string().required('Bank account number is required'),
+      organizationName: Yup.string().required('Organization name is required'),
+      organizationType: Yup.string().required('Organization type is required'),
+      registrationNumber: Yup.string().required('Registration number is required'),
+      registrationDate: Yup.date().required('Registration date is required'),
+      registrationExpiry: Yup.date().required('Registration expiry date is required')
+    })
   });
 
   const initialValues = {
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
-    phone: user?.profile?.phone || '',
-    address: user?.profile?.address || '',
-    city: user?.profile?.city || '',
-    country: user?.profile?.country || '',
-    postalCode: user?.profile?.postalCode || '',
-    nationalId: user?.profile?.nationalId || '',
-    nationalIdExpiry: formatDate(user?.profile?.nationalIdExpiry),
-    bankName: user?.profile?.bankName || '',
-    bankBranch: user?.profile?.bankBranch || '',
-    bankAccountNumber: user?.profile?.bankAccountNumber || '',
-    organizationName: user?.profile?.organizationName || '',
-    organizationType: user?.profile?.organizationType || '',
-    registrationNumber: user?.profile?.registrationNumber || '',
-    registrationDate: formatDate(user?.profile?.registrationDate),
-    registrationExpiry: formatDate(user?.profile?.registrationExpiry)
+    profile: {
+      phone: user?.profile?.phone || '',
+      address: user?.profile?.address || '',
+      city: user?.profile?.city || '',
+      country: user?.profile?.country || '',
+      postalCode: user?.profile?.postalCode || '',
+      nationalId: user?.profile?.nationalId || '',
+      nationalIdExpiry: formatDate(user?.profile?.nationalIdExpiry),
+      bankName: user?.profile?.bankName || '',
+      bankBranch: user?.profile?.bankBranch || '',
+      bankAccountNumber: user?.profile?.bankAccountNumber || '',
+      organizationName: user?.profile?.organizationName || '',
+      organizationType: user?.profile?.organizationType || '',
+      registrationNumber: user?.profile?.registrationNumber || '',
+      registrationDate: formatDate(user?.profile?.registrationDate),
+      registrationExpiry: formatDate(user?.profile?.registrationExpiry)
+    }
   };
 
   const handleNext = () => {
@@ -128,27 +132,8 @@ const DonorProfile = () => {
       formData.append('firstName', values.firstName);
       formData.append('lastName', values.lastName);
 
-      // Construct profile data to send as a JSON string
-      const profileData = {};
-      // These fields are directly under the user object in schema, but for FormData consistency, we'll put them in profile
-      // The backend should handle parsing this correctly.
-      profileData.phone = values.phone;
-      profileData.address = values.address;
-      profileData.city = values.city;
-      profileData.country = values.country;
-      profileData.postalCode = values.postalCode;
-      profileData.nationalId = values.nationalId;
-      profileData.nationalIdExpiry = values.nationalIdExpiry;
-      profileData.bankName = values.bankName;
-      profileData.bankBranch = values.bankBranch;
-      profileData.bankAccountNumber = values.bankAccountNumber;
-      profileData.organizationName = values.organizationName;
-      profileData.organizationType = values.organizationType;
-      profileData.registrationNumber = values.registrationNumber;
-      profileData.registrationDate = values.registrationDate;
-      profileData.registrationExpiry = values.registrationExpiry;
-
-      formData.append('profile', JSON.stringify(profileData));
+      // Add all profile data as a single JSON string under 'profile'
+      formData.append('profile', JSON.stringify(values.profile));
 
       // Add documents separately
       documents.forEach((file) => {
@@ -216,7 +201,7 @@ const DonorProfile = () => {
                     as={TextField}
                     fullWidth
                     label="Phone Number"
-                    name="phone"
+                    name="profile.phone"
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -231,7 +216,7 @@ const DonorProfile = () => {
                     as={TextField}
                     fullWidth
                     label="Address"
-                    name="address"
+                    name="profile.address"
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -246,7 +231,7 @@ const DonorProfile = () => {
                     as={TextField}
                     fullWidth
                     label="City"
-                    name="city"
+                    name="profile.city"
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -261,7 +246,7 @@ const DonorProfile = () => {
                     as={TextField}
                     fullWidth
                     label="Country"
-                    name="country"
+                    name="profile.country"
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -276,7 +261,7 @@ const DonorProfile = () => {
                     as={TextField}
                     fullWidth
                     label="Postal Code"
-                    name="postalCode"
+                    name="profile.postalCode"
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -291,7 +276,7 @@ const DonorProfile = () => {
                     as={TextField}
                     fullWidth
                     label="National ID"
-                    name="nationalId"
+                    name="profile.nationalId"
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -305,7 +290,7 @@ const DonorProfile = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="National ID Expiry"
-                      value={dayjs(initialValues.nationalIdExpiry)}
+                      value={dayjs(initialValues.profile.nationalIdExpiry)}
                       onChange={(newValue) => {
                         // Handle date change
                       }}
@@ -329,7 +314,7 @@ const DonorProfile = () => {
                     as={TextField}
                     fullWidth
                     label="Organization Name"
-                    name="organizationName"
+                    name="profile.organizationName"
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -344,7 +329,7 @@ const DonorProfile = () => {
                     as={TextField}
                     fullWidth
                     label="Organization Type"
-                    name="organizationType"
+                    name="profile.organizationType"
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -359,7 +344,7 @@ const DonorProfile = () => {
                     as={TextField}
                     fullWidth
                     label="Registration Number"
-                    name="registrationNumber"
+                    name="profile.registrationNumber"
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -373,7 +358,7 @@ const DonorProfile = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Registration Date"
-                      value={dayjs(initialValues.registrationDate)}
+                      value={dayjs(initialValues.profile.registrationDate)}
                       onChange={(newValue) => {
                         // Handle date change
                       }}
@@ -387,7 +372,7 @@ const DonorProfile = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Registration Expiry"
-                      value={dayjs(initialValues.registrationExpiry)}
+                      value={dayjs(initialValues.profile.registrationExpiry)}
                       onChange={(newValue) => {
                         // Handle date change
                       }}
@@ -411,7 +396,7 @@ const DonorProfile = () => {
                     as={TextField}
                     fullWidth
                     label="Bank Name"
-                    name="bankName"
+                    name="profile.bankName"
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -426,7 +411,7 @@ const DonorProfile = () => {
                     as={TextField}
                     fullWidth
                     label="Bank Branch"
-                    name="bankBranch"
+                    name="profile.bankBranch"
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -441,7 +426,7 @@ const DonorProfile = () => {
                     as={TextField}
                     fullWidth
                     label="Bank Account Number"
-                    name="bankAccountNumber"
+                    name="profile.bankAccountNumber"
                     type={showPassword ? 'text' : 'password'}
                     InputProps={{
                       startAdornment: (
@@ -589,6 +574,7 @@ const DonorProfile = () => {
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
+          enableReinitialize={true}
         >
           {({ errors, touched, isSubmitting }) => (
             <Form>

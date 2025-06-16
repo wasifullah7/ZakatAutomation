@@ -561,6 +561,7 @@ const AcceptorProfile = () => {
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
+          enableReinitialize={true}
         >
           {({ errors, touched, isSubmitting }) => (
             <Form>

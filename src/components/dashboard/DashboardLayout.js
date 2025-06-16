@@ -66,17 +66,17 @@ const DashboardLayout = ({ children }) => {
         </ListItem>
         {user?.role === 'admin' && (
           <>
-            <ListItem button onClick={() => navigate('/donors')}>
+            <ListItem button onClick={() => navigate('/admin/donor-applications')}>
               <ListItemIcon>
                 <PeopleIcon />
               </ListItemIcon>
-              <ListItemText primary="Donors" />
+              <ListItemText primary="Donor Applications" />
             </ListItem>
-            <ListItem button onClick={() => navigate('/acceptors')}>
+            <ListItem button onClick={() => navigate('/admin/acceptor-applications')}>
               <ListItemIcon>
                 <PeopleIcon />
               </ListItemIcon>
-              <ListItemText primary="Acceptors" />
+              <ListItemText primary="Acceptor Applications" />
             </ListItem>
           </>
         )}
@@ -252,17 +252,17 @@ const DashboardLayout = ({ children }) => {
           </ListItem>
           {user?.role === 'admin' && (
             <>
-              <ListItem button onClick={() => navigate('/donors')} sx={{ minHeight: 48, px: 2.5 }}>
+              <ListItem button onClick={() => navigate('/admin/donor-applications')} sx={{ minHeight: 48, px: 2.5 }}>
                 <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
                   <PeopleIcon />
                 </ListItemIcon>
-                {sidebarOpen && <ListItemText primary="Donors" />}
+                {sidebarOpen && <ListItemText primary="Donor Applications" />}
               </ListItem>
-              <ListItem button onClick={() => navigate('/acceptors')} sx={{ minHeight: 48, px: 2.5 }}>
+              <ListItem button onClick={() => navigate('/admin/acceptor-applications')} sx={{ minHeight: 48, px: 2.5 }}>
                 <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
                   <PeopleIcon />
                 </ListItemIcon>
-                {sidebarOpen && <ListItemText primary="Acceptors" />}
+                {sidebarOpen && <ListItemText primary="Acceptor Applications" />}
               </ListItem>
             </>
           )}

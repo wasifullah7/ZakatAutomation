@@ -177,8 +177,9 @@ export const userAPI = {
 
 // Admin API calls
 export const adminAPI = {
+  getDonors: () => api.get('/admin/donors'),
   getAcceptors: () => api.get('/admin/acceptors'),
-  approveAcceptor: (id, data) => api.put(`/admin/approve/${id}`, data),
+  approveUser: (id, data) => api.put(`/admin/users/${id}/verify`, data),
   getAcceptorStats: () => api.get('/admin/stats/acceptors'),
 };
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   Grid,
@@ -211,7 +211,7 @@ const AdminDashboard = () => {
             </Card>
           </Grid>
 
-          {/* User Distribution */}
+          {/* User Distribution Chart */}
           <Grid item xs={12} md={4}>
             <Card>
               <CardContent>
@@ -229,13 +229,13 @@ const AdminDashboard = () => {
                         outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       >
                         {userDistribution.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
                       <RechartsTooltip />
+                      <Legend />
                     </PieChart>
                   </ResponsiveContainer>
                 </Box>
@@ -247,37 +247,42 @@ const AdminDashboard = () => {
           <Grid item xs={12}>
             <Card>
               <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                  <Typography variant="h6">Recent Activities</Typography>
-                  <IconButton>
-                    <MoreVert />
-                  </IconButton>
-                </Box>
-                <TableContainer component={Paper}>
-                  <Table>
+                <Typography variant="h6" gutterBottom>
+                  Recent Activities
+                </Typography>
+                <TableContainer component={Paper} elevation={0}>
+                  <Table size="small" aria-label="recent activities table">
                     <TableHead>
                       <TableRow>
                         <TableCell>Type</TableCell>
-                        <TableCell>User</TableCell>
                         <TableCell align="right">Amount</TableCell>
-                        <TableCell align="right">Date</TableCell>
-                        <TableCell align="right">Status</TableCell>
+                        <TableCell>User</TableCell>
+                        <TableCell>Date</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell align="right">Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {recentActivities.map((activity) => (
                         <TableRow key={activity.id}>
                           <TableCell>{activity.type}</TableCell>
-                          <TableCell>{activity.user}</TableCell>
                           <TableCell align="right">${activity.amount}</TableCell>
-                          <TableCell align="right">{activity.date}</TableCell>
-                          <TableCell align="right">
+                          <TableCell>{activity.user}</TableCell>
+                          <TableCell>{activity.date}</TableCell>
+                          <TableCell>
                             <Chip
-                              icon={getStatusIcon(activity.status)}
                               label={activity.status}
                               color={getStatusColor(activity.status)}
+                              icon={getStatusIcon(activity.status)}
                               size="small"
                             />
+                          </TableCell>
+                          <TableCell align="right">
+                            <Tooltip title="View Details">
+                              <IconButton size="small">
+                                <MoreVert />
+                              </IconButton>
+                            </Tooltip>
                           </TableCell>
                         </TableRow>
                       ))}
