@@ -129,15 +129,28 @@ export const authAPI = {
   
   updateProfile: async (data) => {
     try {
-      const formData = new FormData();
-      Object.keys(data).forEach(key => {
-        if (data[key] !== undefined && data[key] !== null) {
-          formData.append(key, data[key]);
-        }
-      });
-      const response = await api.patch('/auth/me', formData, {
-        headers: {
+      let sendData;
+      let headers = {};
+
+      if (data instanceof FormData) {
+        sendData = data;
+        headers = {
           'Content-Type': 'multipart/form-data',
+        };
+      } else {
+        sendData = new FormData();
+        Object.keys(data).forEach(key => {
+          if (data[key] !== undefined && data[key] !== null) {
+            sendData.append(key, data[key]);
+          }
+        });
+        // If not FormData, assume JSON or other default content type (axios default is application/json for plain objects)
+        // No specific headers needed here unless it's a specific non-form-data type
+      }
+
+      const response = await api.patch('/auth/me', sendData, {
+        headers: {
+          ...headers // Apply content type header if FormData
         },
       });
       return response;

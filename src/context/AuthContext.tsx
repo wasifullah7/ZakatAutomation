@@ -41,7 +41,7 @@ interface User {
   firstName: string;
   lastName: string;
   email: string;
-  role: 'donor' | 'acceptor';
+  role: 'admin' | 'donor' | 'acceptor';
   profile: Profile;
   isActive: boolean;
   verificationStatus: 'pending' | 'in_review' | 'approved' | 'rejected';
@@ -57,6 +57,7 @@ interface AuthContextType {
   logout: () => void;
   updateProfile: (profileData: any) => Promise<{ success: boolean; error?: string; redirectTo?: string }>;
   isProfileComplete: (user: User) => boolean;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -65,6 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
+  const isAuthenticated: boolean = !!user;
 
   // Function to validate token
   const validateToken = async (token: string): Promise<boolean> => {
@@ -150,12 +152,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ? requiredFields.donor.every(field => 
           user.profile && user.profile[field as keyof typeof user.profile]
         )
-      : requiredFields.acceptor.every(field => 
-          user.profile && user.profile[field as keyof typeof user.profile]
-        );
+      : user.role === 'acceptor'
+        ? requiredFields.acceptor.every(field => 
+            user.profile && user.profile[field as keyof typeof user.profile]
+          )
+        : false;
 
     // Check documents
-    const hasDocuments = user.profile.documents && user.profile.documents.length > 0;
+    const hasDocuments = !!(user.profile.documents && user.profile.documents.length > 0);
 
     return commonFieldsComplete && roleFieldsComplete && hasDocuments;
   };
@@ -190,7 +194,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(user);
 
       // Determine redirect path based on role
-      const redirectTo = `/dashboard/${user.role === 'donor' ? 'DonorDashboard' : user.role === 'acceptor' ? 'AcceptorDashboard' : 'AdminDashboard'}`;
+      let redirectTo = '/signin';
+      if (user.role === 'admin') {
+        redirectTo = '/admin/dashboard';
+      } else if (user.role === 'donor') {
+        redirectTo = '/donor/dashboard';
+      } else if (user.role === 'acceptor') {
+        redirectTo = '/acceptor/dashboard';
+      }
 
       return {
         success: true,
@@ -198,11 +209,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
-      return {
-        success: false,
-        error: errorMessage
-      };
+      toast.error(error.response?.data?.message || 'Login failed. Please check your credentials.');
+      return { success: false, error: error.response?.data?.message || 'Login failed' };
     }
   };
 
@@ -211,7 +219,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     lastName: string;
     email: string;
     password: string;
-    role: 'donor' | 'acceptor';
+    role: 'admin' | 'donor' | 'acceptor';
   }): Promise<{ success: boolean; error?: string; redirectTo?: string }> => {
     try {
       const response = await authAPI.register(userData);
@@ -222,7 +230,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Invalid user data received from server');
       }
 
-      // Create properly typed user object
       const user: User = {
         _id: responseUser._id,
         firstName: responseUser.firstName,
@@ -236,25 +243,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updatedAt: responseUser.updatedAt ? new Date(responseUser.updatedAt) : new Date()
       };
 
-      // Store token and user data
       localStorage.setItem('token', newToken);
       setToken(newToken);
       setUser(user);
 
       // Determine redirect path based on role
-      const redirectTo = `/dashboard/${user.role === 'donor' ? 'DonorDashboard' : 'AcceptorDashboard'}`;
+      let redirectTo = '/signin'; // Default redirect
+      if (user.role === 'admin') {
+        redirectTo = '/admin/dashboard';
+      } else if (user.role === 'donor') {
+        redirectTo = '/donor/dashboard';
+      } else if (user.role === 'acceptor') {
+        redirectTo = '/acceptor/dashboard';
+      }
 
-      return {
-        success: true,
-        redirectTo
-      };
+      toast.success('Registration successful!');
+      return { success: true, redirectTo };
     } catch (error) {
       console.error('Registration error:', error);
-      const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
-      return {
-        success: false,
-        error: errorMessage
-      };
+      toast.error(error.response?.data?.message || 'Registration failed. Please try again.');
+      return { success: false, error: error.response?.data?.message || 'Registration failed' };
     }
   };
 
@@ -268,32 +276,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authAPI.updateProfile(profileData);
       if (response.data) {
-        const updatedUser = { ...user, profile: response.data };
+        if (!user) return { success: false, error: 'No user found' };
+
+        // Create an updated user object, ensuring documents are merged if profileData is FormData
+        let newProfile = response.data;
+        if (profileData instanceof FormData) {
+          // If documents were sent, merge them into the profile object for frontend state
+          // Note: This assumes backend successfully processed documents. If backend doesn't return updated documents, 
+          // we need to manually add them to the frontend state for immediate accuracy.
+          const documentsArray = [];
+          for (let pair of profileData.entries()) {
+            if (pair[0] === 'documents') {
+              // Assuming `pair[1]` is a File object. You might need to adjust this
+              // based on how your backend returns document information after upload.
+              // For now, let's just add a placeholder or simple representation.
+              documentsArray.push({ filename: pair[1].name, url: '#' }); 
+            }
+          }
+          newProfile = {
+            ...response.data,
+            documents: [...(user.profile.documents || []), ...documentsArray]
+          };
+        }
+
+        const updatedUser: User = { ...user, profile: newProfile };
         setUser(updatedUser);
-        
+
         // Check if profile is complete after update
         const isComplete = isProfileComplete(updatedUser);
-        
         if (isComplete) {
           // Redirect to role-specific dashboard after profile completion
-          const redirectTo = updatedUser.role === 'donor' 
+          const redirectTo = updatedUser.role === 'donor'
             ? '/dashboard/DonorDashboard'
-            : '/dashboard/AcceptorDashboard';
-            
-          return { 
-            success: true, 
+            : updatedUser.role === 'acceptor'
+              ? '/dashboard/AcceptorDashboard'
+              : '/';
+          return {
+            success: true,
             redirectTo
           };
         }
-        
         return { success: true };
       }
       return { success: false, error: 'Profile update failed' };
     } catch (error: any) {
       console.error('Profile update error:', error);
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Profile update failed' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Profile update failed'
       };
     }
   };
@@ -305,7 +335,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     register,
     logout,
     updateProfile,
-    isProfileComplete
+    isProfileComplete,
+    isAuthenticated
   };
 
   return (

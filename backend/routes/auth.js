@@ -208,6 +208,11 @@ router.patch('/me', auth, upload.array('documents', 5), async (req, res) => {
       return res.status(400).json({ message: 'Invalid updates' });
     }
 
+    // Ensure user has a profile object
+    if (!req.user.profile) {
+      req.user.profile = {};
+    }
+
     // Handle file uploads
     if (req.files && req.files.length > 0) {
       const documents = req.files.map(file => ({
@@ -218,21 +223,29 @@ router.patch('/me', auth, upload.array('documents', 5), async (req, res) => {
         verified: false
       }));
 
-      if (!req.user.profile) {
-        req.user.profile = {};
+      // Initialize documents array if it doesn't exist
+      if (!req.user.profile.documents) {
+        req.user.profile.documents = [];
       }
-      req.user.profile.documents = documents;
+
+      // Add new documents to existing ones
+      req.user.profile.documents = [...req.user.profile.documents, ...documents];
     }
 
     // Handle profile updates
     updates.forEach(update => {
       if (update === 'profile') {
-        const profileData = JSON.parse(req.body.profile);
-        Object.keys(profileData).forEach(profileKey => {
-          if (profileKey !== 'documents') { // Skip documents as they're handled above
-            req.user.profile[profileKey] = profileData[profileKey];
-          }
-        });
+        try {
+          const profileData = JSON.parse(req.body.profile);
+          Object.keys(profileData).forEach(profileKey => {
+            if (profileKey !== 'documents') { // Skip documents as they're handled above
+              req.user.profile[profileKey] = profileData[profileKey];
+            }
+          });
+        } catch (error) {
+          console.error('Error parsing profile data:', error);
+          return res.status(400).json({ message: 'Invalid profile data format' });
+        }
       } else {
         req.user[update] = req.body[update];
       }

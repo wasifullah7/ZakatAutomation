@@ -1,110 +1,183 @@
 import React, { useState } from 'react';
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Avatar,
+  Menu,
+  MenuItem,
+  Box,
+  InputBase,
+  Badge,
+  useTheme,
+} from '@mui/material';
+import {
+  Menu as MenuIcon,
+  Search as SearchIcon,
+  Notifications as NotificationsIcon,
+  AccountCircle as AccountCircleIcon,
+  Settings as SettingsIcon,
+  ExitToApp as LogoutIcon,
+} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { KTIcon } from '../../helpers/icons';
+import { useAuth } from '../../context/AuthContext';
 
-const Header = ({ user, onLogout }) => {
+const Header = ({ onMenuClick, user, isMobile }) => {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const theme = useTheme();
   const navigate = useNavigate();
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { logout } = useAuth();
+
+  const handleProfileMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    handleProfileMenuClose();
+    logout();
+    navigate('/signin');
+  };
 
   return (
-    <div id="kt_header" className="header align-items-stretch">
-      <div className="container-fluid d-flex align-items-stretch justify-content-between">
-        <div className="d-flex align-items-center d-lg-none ms-n2 me-2" title="Show aside menu">
-          <div className="btn btn-icon btn-active-color-primary w-35px h-35px" id="kt_aside_mobile_toggle">
-            <KTIcon iconName="abstract-14" className="fs-1" />
-          </div>
-        </div>
+    <AppBar 
+      position="fixed" 
+      className="app-header"
+      sx={{
+        zIndex: theme.zIndex.drawer + 1,
+        background: 'linear-gradient(90deg, #1a237e 0%, #283593 100%)',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      }}
+    >
+      <Toolbar>
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="start"
+          onClick={onMenuClick}
+          sx={{ mr: 2 }}
+        >
+          <MenuIcon />
+        </IconButton>
 
-        <div className="d-flex align-items-center flex-grow-1 flex-lg-grow-0">
-          <a href="/" className="d-lg-none">
-            <h1 className="text-white fw-bold">Zakat System</h1>
-          </a>
-        </div>
+        <Typography
+          variant="h6"
+          noWrap
+          component="div"
+          sx={{ 
+            display: { xs: 'none', sm: 'block' },
+            fontWeight: 600,
+            letterSpacing: '0.5px'
+          }}
+        >
+          Zakat Automation
+        </Typography>
 
-        <div className="d-flex align-items-stretch justify-content-between flex-lg-grow-1">
-          <div className="d-flex align-items-stretch" id="kt_header_nav">
-            <div className="header-menu align-items-stretch">
-              <div className="menu menu-lg-rounded menu-column menu-lg-row menu-state-bg menu-title-gray-700 menu-state-title-primary menu-state-icon-primary menu-state-bullet-primary menu-arrow-gray-400 fw-bold my-5 my-lg-0 align-items-stretch">
-                <div className="menu-item here show menu-lg-down-accordion me-lg-1">
-                  <span className="menu-link">
-                    <span className="menu-title">Dashboard</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+        <Box 
+          className="header-search"
+          sx={{ 
+            flexGrow: 1,
+            mx: { xs: 1, sm: 3 },
+            display: { xs: 'none', md: 'flex' },
+            alignItems: 'center',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '8px',
+            px: 2,
+            py: 0.5,
+          }}
+        >
+          <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', mr: 1 }} />
+          <InputBase
+            placeholder="Search..."
+            sx={{
+              color: 'white',
+              '& input::placeholder': {
+                color: 'rgba(255, 255, 255, 0.7)',
+                opacity: 1,
+              },
+              '& input': {
+                color: 'white',
+              },
+            }}
+          />
+        </Box>
 
-          <div className="d-flex align-items-stretch flex-shrink-0">
-            <div className="d-flex align-items-center ms-1 ms-lg-3" id="kt_header_user_menu_toggle">
-              <div
-                className="cursor-pointer symbol symbol-30px symbol-md-40px"
-                data-kt-menu-trigger="click"
-                data-kt-menu-attach="parent"
-                data-kt-menu-placement="bottom-end"
-                onClick={() => setShowUserMenu(!showUserMenu)}
-              >
-                <div className="symbol-label fs-3 bg-light-primary text-primary">
-                  {user?.firstName?.charAt(0)}
-                  {user?.lastName?.charAt(0)}
-                </div>
-              </div>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <IconButton 
+            color="inherit"
+            className="header-action-button"
+            sx={{
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              },
+            }}
+          >
+            <Badge badgeContent={4} color="error">
+              <NotificationsIcon />
+            </Badge>
+          </IconButton>
 
-              {showUserMenu && (
-                <div
-                  className="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-primary fw-bold py-4 fs-6 w-275px"
-                  data-kt-menu="true"
-                >
-                  <div className="menu-item px-3">
-                    <div className="menu-content d-flex align-items-center px-3">
-                      <div className="symbol symbol-50px me-3">
-                        <div className="symbol-label fs-3 bg-light-primary text-primary">
-                          {user?.firstName?.charAt(0)}
-                          {user?.lastName?.charAt(0)}
-                        </div>
-                      </div>
+          <IconButton
+            onClick={handleProfileMenuOpen}
+            className="header-action-button"
+            sx={{
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              },
+            }}
+          >
+            <Avatar 
+              sx={{ 
+                width: 32, 
+                height: 32,
+                bgcolor: 'primary.light',
+                fontSize: '1rem',
+                fontWeight: 600,
+              }}
+            >
+              {user?.name?.charAt(0) || <AccountCircleIcon />}
+            </Avatar>
+          </IconButton>
+        </Box>
 
-                      <div className="d-flex flex-column">
-                        <div className="fw-bolder d-flex align-items-center fs-5">
-                          {user?.firstName} {user?.lastName}
-                          <span className="badge badge-light-success fw-bolder fs-8 px-2 py-1 ms-2">
-                            {user?.role}
-                          </span>
-                        </div>
-                        <a href="#" className="fw-bold text-muted text-hover-primary fs-7">
-                          {user?.email}
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="separator my-2"></div>
-
-                  <div className="menu-item px-5">
-                    <a onClick={() => navigate('/profile')} className="menu-link px-5">
-                      My Profile
-                    </a>
-                  </div>
-
-                  <div className="menu-item px-5">
-                    <a onClick={() => navigate('/settings')} className="menu-link px-5">
-                      Settings
-                    </a>
-                  </div>
-
-                  <div className="separator my-2"></div>
-
-                  <div className="menu-item px-5">
-                    <a onClick={onLogout} className="menu-link px-5">
-                      Sign Out
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleProfileMenuClose}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          PaperProps={{
+            elevation: 3,
+            sx: {
+              mt: 1.5,
+              minWidth: 200,
+              borderRadius: '8px',
+              '& .MuiMenuItem-root': {
+                px: 2,
+                py: 1.5,
+              },
+            },
+          }}
+        >
+          <MenuItem onClick={() => { handleProfileMenuClose(); navigate('/profile'); }}>
+            <AccountCircleIcon sx={{ mr: 2, color: 'text.secondary' }} />
+            Profile
+          </MenuItem>
+          <MenuItem onClick={() => { handleProfileMenuClose(); navigate('/settings'); }}>
+            <SettingsIcon sx={{ mr: 2, color: 'text.secondary' }} />
+            Settings
+          </MenuItem>
+          <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
+            <LogoutIcon sx={{ mr: 2 }} />
+            Logout
+          </MenuItem>
+        </Menu>
+      </Toolbar>
+    </AppBar>
   );
 };
 

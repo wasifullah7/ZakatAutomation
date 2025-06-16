@@ -3,31 +3,46 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { toast } from 'react-toastify';
-import { Card, CardContent, Typography, Grid, TextField, Button, Box, CircularProgress, Alert } from '@mui/material';
+import {
+  Box,
+  Button,
+  Container,
+  Grid,
+  TextField,
+  Typography,
+  Alert,
+  CircularProgress,
+  Paper,
+  Stepper,
+  Step,
+  StepLabel,
+  Card,
+  CardContent,
+  Divider,
+  IconButton,
+  InputAdornment,
+  Avatar
+} from '@mui/material';
+import {
+  Person as PersonIcon,
+  Home as HomeIcon,
+  AccountBalance as BankIcon,
+  Business as BusinessIcon,
+  Upload as UploadIcon,
+  Visibility as VisibilityIcon,
+  VisibilityOff as VisibilityOffIcon
+} from '@mui/icons-material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
-import dayjs from '../../utils/dayjs';
+import dayjs from 'dayjs';
 
-const validationSchema = Yup.object().shape({
-  firstName: Yup.string().required('First name is required'),
-  lastName: Yup.string().required('Last name is required'),
-  phone: Yup.string().required('Phone number is required'),
-  address: Yup.string().required('Address is required'),
-  city: Yup.string().required('City is required'),
-  country: Yup.string().required('Country is required'),
-  postalCode: Yup.string().required('Postal code is required'),
-  nationalId: Yup.string().required('National ID is required'),
-  nationalIdExpiry: Yup.date().required('National ID expiry date is required'),
-  bankName: Yup.string().required('Bank name is required'),
-  bankBranch: Yup.string().required('Bank branch is required'),
-  bankAccountNumber: Yup.string().required('Bank account number is required'),
-  organizationName: Yup.string().required('Organization name is required'),
-  organizationType: Yup.string().required('Organization type is required'),
-  registrationNumber: Yup.string().required('Registration number is required'),
-  registrationDate: Yup.date().required('Registration date is required'),
-  registrationExpiry: Yup.date().required('Registration expiry date is required')
-});
+const steps = ['Personal Information', 'Organization Details', 'Bank Information', 'Documents'];
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  return dayjs(dateString).format('YYYY-MM-DD');
+};
 
 const DonorProfile = () => {
   const { user, updateProfile } = useAuth();
@@ -36,6 +51,28 @@ const DonorProfile = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [documents, setDocuments] = useState([]);
+  const [activeStep, setActiveStep] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const validationSchema = Yup.object().shape({
+    firstName: Yup.string().required('First name is required'),
+    lastName: Yup.string().required('Last name is required'),
+    phone: Yup.string().required('Phone number is required'),
+    address: Yup.string().required('Address is required'),
+    city: Yup.string().required('City is required'),
+    country: Yup.string().required('Country is required'),
+    postalCode: Yup.string().required('Postal code is required'),
+    nationalId: Yup.string().required('National ID is required'),
+    nationalIdExpiry: Yup.date().required('National ID expiry date is required'),
+    bankName: Yup.string().required('Bank name is required'),
+    bankBranch: Yup.string().required('Bank branch is required'),
+    bankAccountNumber: Yup.string().required('Bank account number is required'),
+    organizationName: Yup.string().required('Organization name is required'),
+    organizationType: Yup.string().required('Organization type is required'),
+    registrationNumber: Yup.string().required('Registration number is required'),
+    registrationDate: Yup.date().required('Registration date is required'),
+    registrationExpiry: Yup.date().required('Registration expiry date is required')
+  });
 
   const initialValues = {
     firstName: user?.firstName || '',
@@ -46,19 +83,28 @@ const DonorProfile = () => {
     country: user?.profile?.country || '',
     postalCode: user?.profile?.postalCode || '',
     nationalId: user?.profile?.nationalId || '',
-    nationalIdExpiry: user?.profile?.nationalIdExpiry ? new Date(user.profile.nationalIdExpiry).toISOString().split('T')[0] : '',
+    nationalIdExpiry: formatDate(user?.profile?.nationalIdExpiry),
     bankName: user?.profile?.bankName || '',
     bankBranch: user?.profile?.bankBranch || '',
     bankAccountNumber: user?.profile?.bankAccountNumber || '',
     organizationName: user?.profile?.organizationName || '',
     organizationType: user?.profile?.organizationType || '',
     registrationNumber: user?.profile?.registrationNumber || '',
-    registrationDate: user?.profile?.registrationDate ? new Date(user.profile.registrationDate).toISOString().split('T')[0] : '',
-    registrationExpiry: user?.profile?.registrationExpiry ? new Date(user.profile.registrationExpiry).toISOString().split('T')[0] : ''
+    registrationDate: formatDate(user?.profile?.registrationDate),
+    registrationExpiry: formatDate(user?.profile?.registrationExpiry)
   };
 
-  const handleDocumentChange = (e) => {
-    setDocuments(Array.from(e.target.files));
+  const handleNext = () => {
+    setActiveStep((prevStep) => prevStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevStep) => prevStep - 1);
+  };
+
+  const handleDocumentChange = (event) => {
+    const files = Array.from(event.target.files);
+    setDocuments(files);
   };
 
   const handleSubmit = async (values, { setSubmitting }) => {
@@ -69,302 +115,427 @@ const DonorProfile = () => {
 
       const formData = new FormData();
       
-      // Append basic profile information
+      // Add basic profile information
       Object.keys(values).forEach(key => {
-        formData.append(key, values[key]);
+        if (key !== 'documents') {
+          formData.append(key, values[key]);
+        }
       });
 
-      // Append documents
-      documents.forEach((file, index) => {
-        formData.append('documents', file);
-      });
+      // Add documents
+      if (documents.length > 0) {
+        documents.forEach((file) => {
+          formData.append('documents', file);
+        });
+      }
 
       const result = await updateProfile(formData);
       
       if (result.success) {
         setSuccess('Profile updated successfully!');
-        toast.success('Profile updated successfully!');
         setTimeout(() => {
           navigate('/dashboard');
         }, 2000);
       } else {
         setError(result.message || 'Failed to update profile');
-        toast.error(result.message || 'Failed to update profile');
       }
     } catch (err) {
+      console.error('Profile update error:', err);
       setError(err.message || 'An error occurred while updating profile');
-      toast.error(err.message || 'An error occurred while updating profile');
     } finally {
       setLoading(false);
       setSubmitting(false);
     }
   };
 
+  const renderStepContent = (step) => {
+    switch (step) {
+      case 0:
+        return (
+          <Card elevation={0} sx={{ mb: 3 }}>
+            <CardContent>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="First Name"
+                    name="firstName"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PersonIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Last Name"
+                    name="lastName"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PersonIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Phone Number"
+                    name="phone"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PersonIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Address"
+                    name="address"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <HomeIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="City"
+                    name="city"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <HomeIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Country"
+                    name="country"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <HomeIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Postal Code"
+                    name="postalCode"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <HomeIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        );
+      case 1:
+        return (
+          <Card elevation={0} sx={{ mb: 3 }}>
+            <CardContent>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Organization Name"
+                    name="organizationName"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <BusinessIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Organization Type"
+                    name="organizationType"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <BusinessIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Registration Number"
+                    name="registrationNumber"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <BusinessIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Registration Date"
+                      value={dayjs(initialValues.registrationDate)}
+                      onChange={(newValue) => {
+                        // Handle date change
+                      }}
+                      renderInput={(params) => (
+                        <TextField {...params} fullWidth />
+                      )}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+                <Grid item xs={12}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Registration Expiry"
+                      value={dayjs(initialValues.registrationExpiry)}
+                      onChange={(newValue) => {
+                        // Handle date change
+                      }}
+                      renderInput={(params) => (
+                        <TextField {...params} fullWidth />
+                      )}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        );
+      case 2:
+        return (
+          <Card elevation={0} sx={{ mb: 3 }}>
+            <CardContent>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Bank Name"
+                    name="bankName"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <BankIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Bank Branch"
+                    name="bankBranch"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <BankIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Bank Account Number"
+                    name="bankAccountNumber"
+                    type={showPassword ? 'text' : 'password'}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <BankIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
+                          >
+                            {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        );
+      case 3:
+        return (
+          <Card elevation={0} sx={{ mb: 3 }}>
+            <CardContent>
+              <Box sx={{ textAlign: 'center', py: 3 }}>
+                <UploadIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
+                <Typography variant="h6" gutterBottom>
+                  Upload Required Documents
+                </Typography>
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  Please upload your organization registration documents, tax certificates, and any other relevant documents.
+                </Typography>
+                <Button
+                  variant="contained"
+                  component="label"
+                  startIcon={<UploadIcon />}
+                  sx={{ mt: 2 }}
+                >
+                  Upload Documents
+                  <input
+                    type="file"
+                    hidden
+                    multiple
+                    onChange={handleDocumentChange}
+                  />
+                </Button>
+                {documents.length > 0 && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {documents.length} file(s) selected
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            </CardContent>
+          </Card>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
-      <Card>
-        <CardContent>
-          <Typography variant="h5" component="h1" gutterBottom>
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Avatar
+            sx={{
+              width: 80,
+              height: 80,
+              bgcolor: 'primary.main',
+              fontSize: '2rem',
+              margin: '0 auto 16px'
+            }}
+          >
+            {user?.firstName?.[0]?.toUpperCase()}
+          </Avatar>
+          <Typography variant="h4" component="h1" gutterBottom>
             Complete Your Donor Profile
           </Typography>
-          <Typography variant="body1" color="text.secondary" paragraph>
-            Please provide the following information to complete your donor profile.
+          <Typography variant="body1" color="text.secondary">
+            Please provide the following information to complete your donor profile
           </Typography>
+        </Box>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        {success && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            {success}
+          </Alert>
+        )}
+
+        <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ errors, touched, isSubmitting }) => (
+            <Form>
+              {renderStepContent(activeStep)}
+
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+                <Button
+                  disabled={activeStep === 0}
+                  onClick={handleBack}
+                  variant="outlined"
+                >
+                  Back
+                </Button>
+                {activeStep === steps.length - 1 ? (
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={loading || isSubmitting}
+                    startIcon={loading ? <CircularProgress size={20} /> : null}
+                  >
+                    {loading ? 'Saving...' : 'Complete Profile'}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    onClick={handleNext}
+                  >
+                    Next
+                  </Button>
+                )}
+              </Box>
+            </Form>
           )}
-
-          {success && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              {success}
-            </Alert>
-          )}
-
-          <Formik
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={handleSubmit}
-          >
-            {({ errors, touched }) => (
-              <Form>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      label="First Name"
-                      name="firstName"
-                      error={touched.firstName && Boolean(errors.firstName)}
-                      helperText={touched.firstName && errors.firstName}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      label="Last Name"
-                      name="lastName"
-                      error={touched.lastName && Boolean(errors.lastName)}
-                      helperText={touched.lastName && errors.lastName}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      label="Phone Number"
-                      name="phone"
-                      error={touched.phone && Boolean(errors.phone)}
-                      helperText={touched.phone && errors.phone}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      label="Address"
-                      name="address"
-                      error={touched.address && Boolean(errors.address)}
-                      helperText={touched.address && errors.address}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      label="City"
-                      name="city"
-                      error={touched.city && Boolean(errors.city)}
-                      helperText={touched.city && errors.city}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      label="Country"
-                      name="country"
-                      error={touched.country && Boolean(errors.country)}
-                      helperText={touched.country && errors.country}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      label="Postal Code"
-                      name="postalCode"
-                      error={touched.postalCode && Boolean(errors.postalCode)}
-                      helperText={touched.postalCode && errors.postalCode}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      label="National ID"
-                      name="nationalId"
-                      error={touched.nationalId && Boolean(errors.nationalId)}
-                      helperText={touched.nationalId && errors.nationalId}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      type="date"
-                      label="National ID Expiry"
-                      name="nationalIdExpiry"
-                      error={touched.nationalIdExpiry && Boolean(errors.nationalIdExpiry)}
-                      helperText={touched.nationalIdExpiry && errors.nationalIdExpiry}
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      label="Bank Name"
-                      name="bankName"
-                      error={touched.bankName && Boolean(errors.bankName)}
-                      helperText={touched.bankName && errors.bankName}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      label="Bank Branch"
-                      name="bankBranch"
-                      error={touched.bankBranch && Boolean(errors.bankBranch)}
-                      helperText={touched.bankBranch && errors.bankBranch}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      label="Bank Account Number"
-                      name="bankAccountNumber"
-                      error={touched.bankAccountNumber && Boolean(errors.bankAccountNumber)}
-                      helperText={touched.bankAccountNumber && errors.bankAccountNumber}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      label="Organization Name"
-                      name="organizationName"
-                      error={touched.organizationName && Boolean(errors.organizationName)}
-                      helperText={touched.organizationName && errors.organizationName}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      select
-                      label="Organization Type"
-                      name="organizationType"
-                      error={touched.organizationType && Boolean(errors.organizationType)}
-                      helperText={touched.organizationType && errors.organizationType}
-                      SelectProps={{
-                        native: true
-                      }}
-                    >
-                      <option value="">Select Type</option>
-                      <option value="Non-Profit Organization">Non-Profit Organization</option>
-                      <option value="Charity">Charity</option>
-                      <option value="Religious Institution">Religious Institution</option>
-                      <option value="Community Center">Community Center</option>
-                      <option value="Educational Institution">Educational Institution</option>
-                      <option value="Healthcare Facility">Healthcare Facility</option>
-                      <option value="Other">Other</option>
-                    </Field>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      label="Registration Number"
-                      name="registrationNumber"
-                      error={touched.registrationNumber && Boolean(errors.registrationNumber)}
-                      helperText={touched.registrationNumber && errors.registrationNumber}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      type="date"
-                      label="Registration Date"
-                      name="registrationDate"
-                      error={touched.registrationDate && Boolean(errors.registrationDate)}
-                      helperText={touched.registrationDate && errors.registrationDate}
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Field
-                      as={TextField}
-                      fullWidth
-                      type="date"
-                      label="Registration Expiry"
-                      name="registrationExpiry"
-                      error={touched.registrationExpiry && Boolean(errors.registrationExpiry)}
-                      helperText={touched.registrationExpiry && errors.registrationExpiry}
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Box sx={{ mt: 2 }}>
-                      <input
-                        accept="image/*,.pdf"
-                        style={{ display: 'none' }}
-                        id="document-upload"
-                        type="file"
-                        multiple
-                        onChange={handleDocumentChange}
-                      />
-                      <label htmlFor="document-upload">
-                        <Button
-                          variant="outlined"
-                          component="span"
-                          startIcon={<i className="fas fa-upload" />}
-                        >
-                          Upload Documents
-                        </Button>
-                      </label>
-                      {documents.length > 0 && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          {documents.length} file(s) selected
-                        </Typography>
-                      )}
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      fullWidth
-                      disabled={loading}
-                      sx={{ mt: 2 }}
-                    >
-                      {loading ? <CircularProgress size={24} /> : 'Update Profile'}
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Form>
-            )}
-          </Formik>
-        </CardContent>
-      </Card>
-    </Box>
+        </Formik>
+      </Paper>
+    </Container>
   );
 };
 

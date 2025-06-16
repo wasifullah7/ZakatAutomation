@@ -1,46 +1,30 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Drawer,
-  AppBar,
-  Toolbar,
-  List,
-  Typography,
-  Divider,
-  IconButton,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Avatar,
-  Menu,
-  MenuItem,
-  useTheme,
-  useMediaQuery,
-} from '@mui/material';
-import {
-  Menu as MenuIcon,
-  Dashboard,
-  Person,
-  Notifications,
-  Settings,
-  Logout,
-  ChevronLeft,
-} from '@mui/icons-material';
+import { Box, useTheme, useMediaQuery, AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Menu, MenuItem, Avatar, ListItemAvatar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-
-const drawerWidth = 240;
+import {
+  Dashboard as DashboardIcon,
+  People as PeopleIcon,
+  Payment as PaymentIcon,
+  History as HistoryIcon,
+  Settings as SettingsIcon,
+  Menu as MenuIcon,
+  Notifications as NotificationsIcon,
+  AccountCircle as AccountCircleIcon,
+  Logout as LogoutIcon,
+  Person as PersonIcon,
+} from '@mui/icons-material';
 
 const DashboardLayout = ({ children }) => {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
   const theme = useTheme();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+    setSidebarOpen(!sidebarOpen);
   };
 
   const handleProfileMenuOpen = (event) => {
@@ -52,135 +36,260 @@ const DashboardLayout = ({ children }) => {
   };
 
   const handleLogout = () => {
-    handleProfileMenuClose();
     logout();
     navigate('/signin');
   };
 
-  const handleProfile = () => {
+  const handleProfileClick = () => {
     handleProfileMenuClose();
-    navigate(`/profile/${user.role.toLowerCase()}`);
+    if (user?.role === 'donor') {
+      navigate('/donor/profile');
+    } else if (user?.role === 'acceptor') {
+      navigate('/acceptor/profile');
+    }
   };
 
-  const menuItems = [
-    { text: 'Dashboard', icon: <Dashboard />, path: `/dashboard/${user.role.toLowerCase()}` },
-    { text: 'Profile', icon: <Person />, path: `/profile/${user.role.toLowerCase()}` },
-    { text: 'Settings', icon: <Settings />, path: '/settings' },
-  ];
-
   const drawer = (
-    <Box>
-      <Toolbar sx={{ justifyContent: 'space-between' }}>
+    <div>
+      <Toolbar>
         <Typography variant="h6" noWrap component="div">
-          Zakat App
+          Zakat System
         </Typography>
-        {isMobile && (
-          <IconButton onClick={handleDrawerToggle}>
-            <ChevronLeft />
-          </IconButton>
-        )}
       </Toolbar>
       <Divider />
       <List>
-        {menuItems.map((item) => (
-          <ListItem
-            button
-            key={item.text}
-            onClick={() => navigate(item.path)}
-            selected={window.location.pathname === item.path}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
+        <ListItem button onClick={() => navigate('/dashboard')}>
+          <ListItemIcon>
+            <DashboardIcon />
+          </ListItemIcon>
+          <ListItemText primary="Dashboard" />
+        </ListItem>
+        {user?.role === 'admin' && (
+          <>
+            <ListItem button onClick={() => navigate('/donors')}>
+              <ListItemIcon>
+                <PeopleIcon />
+              </ListItemIcon>
+              <ListItemText primary="Donors" />
+            </ListItem>
+            <ListItem button onClick={() => navigate('/acceptors')}>
+              <ListItemIcon>
+                <PeopleIcon />
+              </ListItemIcon>
+              <ListItemText primary="Acceptors" />
+            </ListItem>
+          </>
+        )}
+        {(user?.role === 'admin' || user?.role === 'donor') && (
+          <ListItem button onClick={() => navigate('/donations')}>
+            <ListItemIcon>
+              <PaymentIcon />
+            </ListItemIcon>
+            <ListItemText primary="Donations" />
           </ListItem>
-        ))}
+        )}
+        <ListItem button onClick={() => navigate('/history')}>
+          <ListItemIcon>
+            <HistoryIcon />
+          </ListItemIcon>
+          <ListItemText primary="History" />
+        </ListItem>
+        <ListItem button onClick={() => navigate('/settings')}>
+          <ListItemIcon>
+            <SettingsIcon />
+          </ListItemIcon>
+          <ListItemText primary="Settings" />
+        </ListItem>
       </List>
-    </Box>
+    </div>
   );
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <AppBar
-        position="fixed"
-        sx={{
-          width: { md: `calc(100% - ${drawerWidth}px)` },
-          ml: { md: `${drawerWidth}px` },
-        }}
-      >
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <IconButton
             color="inherit"
-            aria-label="open drawer"
+            aria-label="toggle drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { md: 'none' } }}
+            sx={{ mr: 2 }}
           >
             <MenuIcon />
           </IconButton>
-          <Box sx={{ flexGrow: 1 }} />
+          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+            <Typography 
+              variant="h5" 
+              component="div" 
+              sx={{ 
+                fontWeight: 700,
+                background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                letterSpacing: '0.5px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}
+            >
+              <img 
+                src="/logo.png" 
+                alt="Zakat Logo" 
+                style={{ 
+                  height: '32px', 
+                  marginRight: '8px',
+                  filter: 'brightness(0) invert(1)'
+                }} 
+              />
+              Zakat Automation
+            </Typography>
+          </Box>
           <IconButton color="inherit">
-            <Notifications />
+            <NotificationsIcon />
           </IconButton>
           <IconButton
+            color="inherit"
             onClick={handleProfileMenuOpen}
-            size="small"
-            sx={{ ml: 2 }}
-            aria-controls="menu-appbar"
-            aria-haspopup="true"
+            sx={{ ml: 1 }}
           >
-            <Avatar sx={{ width: 32, height: 32 }}>
-              {user?.firstName?.[0]}{user?.lastName?.[0]}
+            <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+              {user?.firstName?.[0]?.toUpperCase()}
             </Avatar>
           </IconButton>
           <Menu
-            id="menu-appbar"
             anchorEl={anchorEl}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
             open={Boolean(anchorEl)}
             onClose={handleProfileMenuClose}
+            PaperProps={{
+              elevation: 0,
+              sx: {
+                overflow: 'visible',
+                filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                mt: 1.5,
+                '& .MuiAvatar-root': {
+                  width: 32,
+                  height: 32,
+                  ml: -0.5,
+                  mr: 1,
+                },
+                '&:before': {
+                  content: '""',
+                  display: 'block',
+                  position: 'absolute',
+                  top: 0,
+                  right: 14,
+                  width: 10,
+                  height: 10,
+                  bgcolor: 'background.paper',
+                  transform: 'translateY(-50%) rotate(45deg)',
+                  zIndex: 0,
+                },
+              },
+            }}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
           >
-            <MenuItem onClick={handleProfile}>Profile</MenuItem>
-            <MenuItem onClick={handleLogout}>Logout</MenuItem>
+            <MenuItem onClick={handleProfileClick}>
+              <ListItemAvatar>
+                <Avatar sx={{ bgcolor: 'primary.main' }}>
+                  <PersonIcon />
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText 
+                primary="Profile" 
+                secondary={user?.email}
+              />
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleLogout}>
+              <ListItemIcon>
+                <LogoutIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Logout" />
+            </MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>
-      <Box
-        component="nav"
-        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
-      >
-        <Drawer
-          variant={isMobile ? 'temporary' : 'permanent'}
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-          sx={{
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
-              width: drawerWidth,
-            },
-          }}
-        >
-          {drawer}
-        </Drawer>
-      </Box>
-      <Box
-        component="main"
+      <Drawer
+        variant="permanent"
         sx={{
-          flexGrow: 1,
-          p: 3,
-          width: { md: `calc(100% - ${drawerWidth}px)` },
-          mt: '64px',
+          width: sidebarOpen ? 240 : 65,
+          flexShrink: 0,
+          transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
+          [`& .MuiDrawer-paper`]: { 
+            width: sidebarOpen ? 240 : 65,
+            transition: theme.transitions.create('width', {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+            boxSizing: 'border-box',
+            overflowX: 'hidden'
+          },
         }}
+        open={sidebarOpen}
       >
+        <Toolbar>
+          {sidebarOpen ? (
+            <Typography variant="h6" noWrap component="div">
+              Zakat System
+            </Typography>
+          ) : (
+            <Typography variant="h6" noWrap component="div" sx={{ textAlign: 'center' }}>
+              ZS
+            </Typography>
+          )}
+        </Toolbar>
+        <Divider />
+        <List>
+          <ListItem button onClick={() => navigate('/dashboard')} sx={{ minHeight: 48, px: 2.5 }}>
+            <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
+              <DashboardIcon />
+            </ListItemIcon>
+            {sidebarOpen && <ListItemText primary="Dashboard" />}
+          </ListItem>
+          {user?.role === 'admin' && (
+            <>
+              <ListItem button onClick={() => navigate('/donors')} sx={{ minHeight: 48, px: 2.5 }}>
+                <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
+                  <PeopleIcon />
+                </ListItemIcon>
+                {sidebarOpen && <ListItemText primary="Donors" />}
+              </ListItem>
+              <ListItem button onClick={() => navigate('/acceptors')} sx={{ minHeight: 48, px: 2.5 }}>
+                <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
+                  <PeopleIcon />
+                </ListItemIcon>
+                {sidebarOpen && <ListItemText primary="Acceptors" />}
+              </ListItem>
+            </>
+          )}
+          {(user?.role === 'admin' || user?.role === 'donor') && (
+            <ListItem button onClick={() => navigate('/donations')} sx={{ minHeight: 48, px: 2.5 }}>
+              <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
+                <PaymentIcon />
+              </ListItemIcon>
+              {sidebarOpen && <ListItemText primary="Donations" />}
+            </ListItem>
+          )}
+          <ListItem button onClick={() => navigate('/history')} sx={{ minHeight: 48, px: 2.5 }}>
+            <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
+              <HistoryIcon />
+            </ListItemIcon>
+            {sidebarOpen && <ListItemText primary="History" />}
+          </ListItem>
+          <ListItem button onClick={() => navigate('/settings')} sx={{ minHeight: 48, px: 2.5 }}>
+            <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 3 : 'auto', justifyContent: 'center' }}>
+              <SettingsIcon />
+            </ListItemIcon>
+            {sidebarOpen && <ListItemText primary="Settings" />}
+          </ListItem>
+        </List>
+      </Drawer>
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        <Toolbar />
         {children}
       </Box>
     </Box>

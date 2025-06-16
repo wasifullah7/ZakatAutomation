@@ -210,7 +210,20 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 
 // Method to get public profile
 userSchema.methods.getPublicProfile = function() {
-  const userObject = this.toObject();
+  const userObject = this.toObject({
+    // Ensure profile and its subfields are included
+    virtuals: true, // Include virtuals if any are used for profile fields
+    getters: true,  // Apply getters if any are defined for profile fields
+  });
+
+  // Explicitly ensure profile and its documents are present
+  if (this.profile) {
+    userObject.profile = this.profile.toObject({
+      virtuals: true,
+      getters: true
+    });
+  }
+  
   delete userObject.password;
   return userObject;
 };

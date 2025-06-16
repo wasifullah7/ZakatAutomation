@@ -1,122 +1,193 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import {
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemButton,
+  Divider,
+  Box,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
+import {
+  Dashboard as DashboardIcon,
+  People as PeopleIcon,
+  Payment as PaymentIcon,
+  History as HistoryIcon,
+  Settings as SettingsIcon,
+  Help as HelpIcon,
+} from '@mui/icons-material';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { KTIcon } from '../../helpers/icons';
 
-const Sidebar = ({ open, setOpen }) => {
+const drawerWidth = 280;
+
+const Sidebar = ({ open, onClose }) => {
+  const theme = useTheme();
   const navigate = useNavigate();
-  const { isAdmin, isDonor, isAcceptor } = useAuth();
+  const location = useLocation();
+  const { user } = useAuth();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const menuItems = [
     {
       title: 'Dashboard',
-      icon: 'element-11',
       path: '/dashboard',
+      icon: <DashboardIcon />,
       roles: ['admin', 'donor', 'acceptor'],
     },
     {
-      title: 'Users',
-      icon: 'profile-user',
-      path: '/admin/users',
+      title: 'Donors',
+      path: '/donors',
+      icon: <PeopleIcon />,
       roles: ['admin'],
     },
     {
-      title: 'Reports',
-      icon: 'chart-line',
-      path: '/admin/reports',
+      title: 'Acceptors',
+      path: '/acceptors',
+      icon: <PeopleIcon />,
       roles: ['admin'],
     },
     {
-      title: 'Calculate Zakat',
-      icon: 'calculator',
-      path: '/donor/calculate',
-      roles: ['donor'],
+      title: 'Donations',
+      path: '/donations',
+      icon: <PaymentIcon />,
+      roles: ['admin', 'donor'],
     },
     {
-      title: 'Make Payment',
-      icon: 'dollar',
-      path: '/donor/payment',
-      roles: ['donor'],
+      title: 'History',
+      path: '/history',
+      icon: <HistoryIcon />,
+      roles: ['admin', 'donor', 'acceptor'],
     },
     {
-      title: 'Payment History',
-      icon: 'clock',
-      path: '/donor/history',
-      roles: ['donor'],
-    },
-    {
-      title: 'View Requests',
-      icon: 'document',
-      path: '/acceptor/requests',
-      roles: ['acceptor'],
-    },
-    {
-      title: 'Update Profile',
-      icon: 'profile-circle',
-      path: '/acceptor/profile',
-      roles: ['acceptor'],
-    },
-    {
-      title: 'Request History',
-      icon: 'clock',
-      path: '/acceptor/history',
-      roles: ['acceptor'],
+      title: 'Settings',
+      path: '/settings',
+      icon: <SettingsIcon />,
+      roles: ['admin', 'donor', 'acceptor'],
     },
   ];
 
-  const filteredMenuItems = menuItems.filter((item) => {
-    if (isAdmin) return item.roles.includes('admin');
-    if (isDonor) return item.roles.includes('donor');
-    if (isAcceptor) return item.roles.includes('acceptor');
-    return false;
-  });
+  const filteredMenuItems = menuItems.filter(item => 
+    item.roles.includes(user?.role)
+  );
+
+  const drawer = (
+    <Box
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'linear-gradient(180deg, #1a237e 0%, #283593 100%)',
+        color: 'white',
+      }}
+    >
+      <Box
+        sx={{
+          p: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
+      >
+        <img 
+          src="/logo.png" 
+          alt="Logo" 
+          style={{ height: 40 }}
+        />
+      </Box>
+
+      <List sx={{ flexGrow: 1, px: 2 }}>
+        {filteredMenuItems.map((item) => (
+          <ListItem 
+            key={item.path} 
+            disablePadding 
+            sx={{ 
+              mb: 1,
+              borderRadius: '8px',
+              overflow: 'hidden',
+            }}
+          >
+            <ListItemButton
+              onClick={() => {
+                navigate(item.path);
+                if (isMobile) onClose();
+              }}
+              selected={location.pathname === item.path}
+              sx={{
+                '&.Mui-selected': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  },
+                },
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                },
+                borderRadius: '8px',
+                py: 1.5,
+              }}
+            >
+              <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText 
+                primary={item.title}
+                primaryTypographyProps={{
+                  fontSize: '0.95rem',
+                  fontWeight: location.pathname === item.path ? 600 : 400,
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+
+      <Box sx={{ p: 2, borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+        <ListItemButton
+          onClick={() => navigate('/help')}
+          sx={{
+            borderRadius: '8px',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            },
+          }}
+        >
+          <ListItemIcon sx={{ color: 'inherit', minWidth: 40 }}>
+            <HelpIcon />
+          </ListItemIcon>
+          <ListItemText 
+            primary="Help & Support"
+            primaryTypographyProps={{
+              fontSize: '0.95rem',
+            }}
+          />
+        </ListItemButton>
+      </Box>
+    </Box>
+  );
 
   return (
-    <div
-      id="kt_aside"
-      className={`aside ${open ? 'aside-on' : 'aside-off'} d-flex flex-column flex-row-auto`}
+    <Drawer
+      variant={isMobile ? 'temporary' : 'permanent'}
+      open={open}
+      onClose={onClose}
+      sx={{
+        width: drawerWidth,
+        flexShrink: 0,
+        '& .MuiDrawer-paper': {
+          width: drawerWidth,
+          boxSizing: 'border-box',
+          border: 'none',
+          boxShadow: '2px 0 8px rgba(0,0,0,0.1)',
+        },
+      }}
     >
-      <div className="aside-logo flex-column-auto" id="kt_aside_logo">
-        <a href="/" className="text-decoration-none">
-          <h1 className="text-white fw-bold">Zakat System</h1>
-        </a>
-        <div
-          id="kt_aside_toggle"
-          className="btn btn-icon w-auto px-0 btn-active-color-primary aside-toggle"
-          data-kt-toggle="true"
-          data-kt-toggle-state="active"
-          data-kt-toggle-target="body"
-          data-kt-toggle-name="aside-minimize"
-          onClick={() => setOpen(!open)}
-        >
-          <KTIcon iconName="arrow-left" className="fs-1 rotate-180" />
-        </div>
-      </div>
-
-      <div className="aside-menu flex-column-fluid">
-        <div className="hover-scroll-overlay-y px-2 my-4 my-lg-8" id="kt_aside_menu_wrapper">
-          <div
-            id="kt_aside_menu"
-            className="menu menu-column menu-title-gray-800 menu-state-title-primary menu-state-icon-primary menu-state-bullet-primary menu-arrow-gray-500"
-            data-kt-menu="true"
-          >
-            {filteredMenuItems.map((item, index) => (
-              <div key={index} className="menu-item">
-                <a
-                  className="menu-link"
-                  onClick={() => navigate(item.path)}
-                >
-                  <span className="menu-icon">
-                    <KTIcon iconName={item.icon} className="fs-2" />
-                  </span>
-                  <span className="menu-title">{item.title}</span>
-                </a>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+      {drawer}
+    </Drawer>
   );
 };
 

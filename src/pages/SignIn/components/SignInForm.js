@@ -39,13 +39,12 @@ const SignInForm = () => {
     onSubmit: async (values, { setStatus, setSubmitting }) => {
       setLoading(true);
       try {
-        const result = await login(values.email, values.password);
+        const result = await login(values.email, values.password, values.role);
         
         if (result.success) {
           toast.success('Login successful!');
           if (result.redirectTo) {
-            sessionStorage.setItem('redirectPath', result.redirectTo);
-            window.location.href = result.redirectTo;
+            navigate(result.redirectTo);
           }
         } else {
           setStatus(result.error || 'Login failed. Please try again.');

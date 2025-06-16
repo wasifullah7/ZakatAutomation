@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { KTIcon } from '../../helpers/icons';
-import { authAPI } from '../../services/api';
 import {
   Box,
   Button,
@@ -14,13 +12,37 @@ import {
   Typography,
   Alert,
   CircularProgress,
-  Paper
+  Paper,
+  Stepper,
+  Step,
+  StepLabel,
+  Card,
+  CardContent,
+  Divider,
+  IconButton,
+  InputAdornment,
+  Avatar,
+  Chip
 } from '@mui/material';
+import {
+  Person as PersonIcon,
+  Home as HomeIcon,
+  AccountBalance as BankIcon,
+  ContactEmergency as EmergencyIcon,
+  Upload as UploadIcon,
+  Visibility as VisibilityIcon,
+  VisibilityOff as VisibilityOffIcon
+} from '@mui/icons-material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+
+const steps = ['Personal Information', 'Financial Details', 'Bank Information', 'Emergency Contact', 'Documents'];
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toISOString().split('T')[0];
+  return dayjs(dateString).format('YYYY-MM-DD');
 };
 
 const AcceptorProfile = () => {
@@ -30,6 +52,8 @@ const AcceptorProfile = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [documents, setDocuments] = useState([]);
+  const [activeStep, setActiveStep] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
 
   const validationSchema = Yup.object().shape({
     firstName: Yup.string().required('First name is required'),
@@ -83,6 +107,14 @@ const AcceptorProfile = () => {
     }
   };
 
+  const handleNext = () => {
+    setActiveStep((prevStep) => prevStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevStep) => prevStep - 1);
+  };
+
   const handleDocumentChange = (event) => {
     const files = Array.from(event.target.files);
     setDocuments(files);
@@ -94,10 +126,26 @@ const AcceptorProfile = () => {
       setError('');
       setSuccess('');
 
+      // Validate documents
+      if (documents.length === 0) {
+        setError('Please upload at least one document to proceed');
+        setLoading(false);
+        setSubmitting(false);
+        return;
+      }
+
       const formData = new FormData();
+      
+      // Add basic profile information
       formData.append('firstName', values.firstName);
       formData.append('lastName', values.lastName);
-      formData.append('profile', JSON.stringify(values.profile));
+      
+      // Add profile data as JSON string
+      const profileData = {
+        ...values.profile,
+        documents: [] // Don't send existing documents in the profile data
+      };
+      formData.append('profile', JSON.stringify(profileData));
 
       // Add documents
       documents.forEach((doc) => {
@@ -108,77 +156,395 @@ const AcceptorProfile = () => {
       
       if (result.success) {
         setSuccess('Profile updated successfully!');
-        
-        // Wait for the state to update
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Check if profile is complete
-        const isProfileComplete = (userData) => {
-          if (!userData || !userData.role) return false;
-          
-          if (userData.role === 'acceptor') {
-            const profile = userData.profile || {};
-            return (
-              profile.nationalId &&
-              profile.nationalIdExpiry &&
-              profile.familySize &&
-              profile.monthlyIncome &&
-              profile.monthlyExpenses &&
-              profile.phone &&
-              profile.city &&
-              profile.country &&
-              profile.postalCode &&
-              profile.address &&
-              profile.bankAccountNumber &&
-              profile.bankName &&
-              profile.bankBranch &&
-              profile.zakatReason &&
-              profile.emergencyContact?.name &&
-              profile.emergencyContact?.relationship &&
-              profile.emergencyContact?.phone &&
-              profile.documents?.length > 0
-            );
-          }
-          return true;
-        };
-
-        if (isProfileComplete(result.user)) {
-          // If profile is complete, redirect to dashboard
-          window.location.href = '/dashboard';
-        } else {
-          // If profile is still incomplete, show error
-          setError('Please fill in all required fields and upload at least one document');
-        }
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 2000);
       } else {
         setError(result.error || 'Failed to update profile');
       }
     } catch (err) {
       console.error('Profile update error:', err);
-      setError(err.response?.data?.message || 'Failed to update profile');
+      setError(err.message || 'An error occurred while updating profile');
     } finally {
       setLoading(false);
       setSubmitting(false);
     }
   };
 
+  const renderStepContent = (step) => {
+    switch (step) {
+      case 0:
+        return (
+          <Card elevation={0} sx={{ mb: 3 }}>
+            <CardContent>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="First Name"
+                    name="firstName"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PersonIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Last Name"
+                    name="lastName"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PersonIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="National ID"
+                    name="profile.nationalId"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PersonIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="National ID Expiry"
+                      value={dayjs(initialValues.profile.nationalIdExpiry)}
+                      onChange={(newValue) => {
+                        // Handle date change
+                      }}
+                      renderInput={(params) => (
+                        <TextField {...params} fullWidth />
+                      )}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        );
+      case 1:
+        return (
+          <Card elevation={0} sx={{ mb: 3 }}>
+            <CardContent>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Family Size"
+                    name="profile.familySize"
+                    type="number"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PersonIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Monthly Income"
+                    name="profile.monthlyIncome"
+                    type="number"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PersonIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Monthly Expenses"
+                    name="profile.monthlyExpenses"
+                    type="number"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PersonIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    multiline
+                    rows={4}
+                    label="Reason for Zakat"
+                    name="profile.zakatReason"
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        );
+      case 2:
+        return (
+          <Card elevation={0} sx={{ mb: 3 }}>
+            <CardContent>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Bank Name"
+                    name="profile.bankName"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <BankIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Bank Branch"
+                    name="profile.bankBranch"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <BankIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Bank Account Number"
+                    name="profile.bankAccountNumber"
+                    type={showPassword ? 'text' : 'password'}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <BankIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
+                          >
+                            {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        );
+      case 3:
+        return (
+          <Card elevation={0} sx={{ mb: 3 }}>
+            <CardContent>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Emergency Contact Name"
+                    name="profile.emergencyContact.name"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <EmergencyIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Relationship"
+                    name="profile.emergencyContact.relationship"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <EmergencyIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Field
+                    as={TextField}
+                    fullWidth
+                    label="Emergency Contact Phone"
+                    name="profile.emergencyContact.phone"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <EmergencyIcon color="primary" />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        );
+      case 4:
+        return (
+          <Card elevation={0} sx={{ mb: 3 }}>
+            <CardContent>
+              <Box sx={{ textAlign: 'center', py: 3 }}>
+                <UploadIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
+                <Typography variant="h6" gutterBottom>
+                  Upload Required Documents
+                </Typography>
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  Please upload at least one of the following documents:
+                </Typography>
+                <Box sx={{ mb: 3, textAlign: 'left', maxWidth: 400, mx: 'auto' }}>
+                  <Typography variant="body2" component="div" sx={{ mb: 1 }}>
+                    • National ID or Passport
+                  </Typography>
+                  <Typography variant="body2" component="div" sx={{ mb: 1 }}>
+                    • Proof of Income
+                  </Typography>
+                  <Typography variant="body2" component="div" sx={{ mb: 1 }}>
+                    • Proof of Address
+                  </Typography>
+                  <Typography variant="body2" component="div" sx={{ mb: 1 }}>
+                    • Any other supporting documents
+                  </Typography>
+                </Box>
+                <Button
+                  variant="contained"
+                  component="label"
+                  startIcon={<UploadIcon />}
+                  sx={{ mt: 2 }}
+                >
+                  Upload Documents
+                  <input
+                    type="file"
+                    hidden
+                    multiple
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleDocumentChange}
+                  />
+                </Button>
+                {documents.length > 0 ? (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="body2" color="success.main" sx={{ mb: 1 }}>
+                      {documents.length} file(s) selected
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
+                      {documents.map((doc, index) => (
+                        <Chip
+                          key={index}
+                          label={doc.name}
+                          onDelete={() => {
+                            const newDocs = [...documents];
+                            newDocs.splice(index, 1);
+                            setDocuments(newDocs);
+                          }}
+                          color="primary"
+                          variant="outlined"
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="error" sx={{ mt: 2 }}>
+                    Please upload at least one document to proceed
+                  </Typography>
+                )}
+              </Box>
+            </CardContent>
+          </Card>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Complete Your Profile
-        </Typography>
-        
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Avatar
+            sx={{
+              width: 80,
+              height: 80,
+              bgcolor: 'primary.main',
+              fontSize: '2rem',
+              margin: '0 auto 16px'
+            }}
+          >
+            {user?.firstName?.[0]?.toUpperCase()}
+          </Avatar>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Complete Your Profile
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Please provide the following information to complete your profile
+          </Typography>
+        </Box>
+
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
         )}
-        
+
         {success && (
           <Alert severity="success" sx={{ mb: 2 }}>
             {success}
           </Alert>
         )}
+
+        <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
 
         <Formik
           initialValues={initialValues}
@@ -187,304 +553,34 @@ const AcceptorProfile = () => {
         >
           {({ errors, touched, isSubmitting }) => (
             <Form>
-              <Grid container spacing={3}>
-                {/* Personal Information */}
-                <Grid item xs={12}>
-                  <Typography variant="h6" gutterBottom>
-                    Personal Information
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    name="firstName"
-                    label="First Name"
-                    error={touched.firstName && Boolean(errors.firstName)}
-                    helperText={touched.firstName && errors.firstName}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    name="lastName"
-                    label="Last Name"
-                    error={touched.lastName && Boolean(errors.lastName)}
-                    helperText={touched.lastName && errors.lastName}
-                  />
-                </Grid>
+              {renderStepContent(activeStep)}
 
-                {/* Contact Information */}
-                <Grid item xs={12}>
-                  <Typography variant="h6" gutterBottom>
-                    Contact Information
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    multiline
-                    rows={3}
-                    name="profile.address"
-                    label="Full Address"
-                    error={touched.profile?.address && Boolean(errors.profile?.address)}
-                    helperText={touched.profile?.address && errors.profile?.address}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    name="profile.phone"
-                    label="Phone Number"
-                    error={touched.profile?.phone && Boolean(errors.profile?.phone)}
-                    helperText={touched.profile?.phone && errors.profile?.phone}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    name="profile.city"
-                    label="City"
-                    error={touched.profile?.city && Boolean(errors.profile?.city)}
-                    helperText={touched.profile?.city && errors.profile?.city}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    name="profile.country"
-                    label="Country"
-                    error={touched.profile?.country && Boolean(errors.profile?.country)}
-                    helperText={touched.profile?.country && errors.profile?.country}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    name="profile.postalCode"
-                    label="Postal Code"
-                    error={touched.profile?.postalCode && Boolean(errors.profile?.postalCode)}
-                    helperText={touched.profile?.postalCode && errors.profile?.postalCode}
-                  />
-                </Grid>
-
-                {/* National ID Section */}
-                <Grid item xs={12}>
-                  <Typography variant="h6" gutterBottom>
-                    National ID Information
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    name="profile.nationalId"
-                    label="National ID Number"
-                    error={touched.profile?.nationalId && Boolean(errors.profile?.nationalId)}
-                    helperText={touched.profile?.nationalId && errors.profile?.nationalId}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    type="date"
-                    name="profile.nationalIdExpiry"
-                    label="National ID Expiry Date"
-                    InputLabelProps={{ shrink: true }}
-                    error={touched.profile?.nationalIdExpiry && Boolean(errors.profile?.nationalIdExpiry)}
-                    helperText={touched.profile?.nationalIdExpiry && errors.profile?.nationalIdExpiry}
-                  />
-                </Grid>
-
-                {/* Family Information */}
-                <Grid item xs={12}>
-                  <Typography variant="h6" gutterBottom>
-                    Family Information
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    type="number"
-                    name="profile.familySize"
-                    label="Family Size"
-                    error={touched.profile?.familySize && Boolean(errors.profile?.familySize)}
-                    helperText={touched.profile?.familySize && errors.profile?.familySize}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    type="number"
-                    name="profile.monthlyIncome"
-                    label="Monthly Income"
-                    error={touched.profile?.monthlyIncome && Boolean(errors.profile?.monthlyIncome)}
-                    helperText={touched.profile?.monthlyIncome && errors.profile?.monthlyIncome}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    type="number"
-                    name="profile.monthlyExpenses"
-                    label="Monthly Expenses"
-                    error={touched.profile?.monthlyExpenses && Boolean(errors.profile?.monthlyExpenses)}
-                    helperText={touched.profile?.monthlyExpenses && errors.profile?.monthlyExpenses}
-                  />
-                </Grid>
-
-                {/* Bank Details */}
-                <Grid item xs={12}>
-                  <Typography variant="h6" gutterBottom>
-                    Bank Details
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    name="profile.bankAccountNumber"
-                    label="Account Number"
-                    error={touched.profile?.bankAccountNumber && Boolean(errors.profile?.bankAccountNumber)}
-                    helperText={touched.profile?.bankAccountNumber && errors.profile?.bankAccountNumber}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    name="profile.bankName"
-                    label="Bank Name"
-                    error={touched.profile?.bankName && Boolean(errors.profile?.bankName)}
-                    helperText={touched.profile?.bankName && errors.profile?.bankName}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    name="profile.bankBranch"
-                    label="Branch Name"
-                    error={touched.profile?.bankBranch && Boolean(errors.profile?.bankBranch)}
-                    helperText={touched.profile?.bankBranch && errors.profile?.bankBranch}
-                  />
-                </Grid>
-
-                {/* Emergency Contact */}
-                <Grid item xs={12}>
-                  <Typography variant="h6" gutterBottom>
-                    Emergency Contact
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    name="profile.emergencyContact.name"
-                    label="Contact Name"
-                    error={touched.profile?.emergencyContact?.name && Boolean(errors.profile?.emergencyContact?.name)}
-                    helperText={touched.profile?.emergencyContact?.name && errors.profile?.emergencyContact?.name}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    name="profile.emergencyContact.relationship"
-                    label="Relationship"
-                    error={touched.profile?.emergencyContact?.relationship && Boolean(errors.profile?.emergencyContact?.relationship)}
-                    helperText={touched.profile?.emergencyContact?.relationship && errors.profile?.emergencyContact?.relationship}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    name="profile.emergencyContact.phone"
-                    label="Contact Phone"
-                    error={touched.profile?.emergencyContact?.phone && Boolean(errors.profile?.emergencyContact?.phone)}
-                    helperText={touched.profile?.emergencyContact?.phone && errors.profile?.emergencyContact?.phone}
-                  />
-                </Grid>
-
-                {/* Zakat Reason */}
-                <Grid item xs={12}>
-                  <Typography variant="h6" gutterBottom>
-                    Zakat Information
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Field
-                    as={TextField}
-                    fullWidth
-                    multiline
-                    rows={4}
-                    name="profile.zakatReason"
-                    label="Reason for Zakat"
-                    error={touched.profile?.zakatReason && Boolean(errors.profile?.zakatReason)}
-                    helperText={touched.profile?.zakatReason && errors.profile?.zakatReason}
-                  />
-                </Grid>
-
-                {/* Documents Section */}
-                <Grid item xs={12}>
-                  <Typography variant="h6" gutterBottom>
-                    Required Documents
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <input
-                    type="file"
-                    multiple
-                    onChange={handleDocumentChange}
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    style={{ display: 'none' }}
-                    id="document-upload"
-                  />
-                  <label htmlFor="document-upload">
-                    <Button
-                      variant="outlined"
-                      component="span"
-                      startIcon={<KTIcon iconName="upload" />}
-                    >
-                      Upload Documents
-                    </Button>
-                  </label>
-                  {documents.length > 0 && (
-                    <Typography variant="body2" sx={{ mt: 1 }}>
-                      {documents.length} file(s) selected
-                    </Typography>
-                  )}
-                  <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
-                    Please upload your National ID, proof of address, and any other relevant documents.
-                  </Typography>
-                </Grid>
-
-                {/* Submit Button */}
-                <Grid item xs={12}>
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      disabled={isSubmitting || loading || documents.length === 0}
-                      sx={{ minWidth: 200 }}
-                    >
-                      {loading ? <CircularProgress size={24} /> : 'Submit Application'}
-                    </Button>
-                  </Box>
-                </Grid>
-              </Grid>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+                <Button
+                  disabled={activeStep === 0}
+                  onClick={handleBack}
+                  variant="outlined"
+                >
+                  Back
+                </Button>
+                {activeStep === steps.length - 1 ? (
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={loading || isSubmitting}
+                    startIcon={loading ? <CircularProgress size={20} /> : null}
+                  >
+                    {loading ? 'Saving...' : 'Complete Profile'}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    onClick={handleNext}
+                  >
+                    Next
+                  </Button>
+                )}
+              </Box>
             </Form>
           )}
         </Formik>
