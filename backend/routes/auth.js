@@ -257,9 +257,10 @@ router.patch('/me', auth, upload.array('documents', 5), async (req, res) => {
     }
 
     await req.user.save();
+    console.log('Backend returning updated user profile:', req.user.getPublicProfile());
     res.json(req.user.getPublicProfile());
   } catch (error) {
-    console.error('Profile update error:', error);
+    console.error('Profile update error:', error.stack);
     res.status(500).json({ message: 'Error updating profile' });
   }
 });

@@ -40,10 +40,7 @@ const auth = async (req, res, next) => {
       }
 
       // Add user info to request
-      req.user = {
-        userId: decoded.userId,
-        role: decoded.role
-      };
+      req.user = user;
       req.token = token;
       next();
     } catch (error) {
